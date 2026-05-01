@@ -517,7 +517,7 @@ input, select, textarea { font-family: inherit; }
     <a class="nav-item" data-route="config"><i data-lucide="settings"></i> Configurazione</a>
     <div class="spacer"></div>
     <div class="muted" style="padding: 12px; font-size: 0.72rem;">
-      v1.4 · Tutto in-memory
+      v1.5 · Tutto in-memory
     </div>
   </aside>
 
@@ -743,6 +743,76 @@ export default {
     return new Response(upstream.body, { status: upstream.status, headers: respHeaders });
   }
 };</pre>
+
+          <div class="warning-box" style="margin-top: 16px;">
+            <i data-lucide="alert-triangle" class="icon"></i>
+            <div>
+              <strong>IntelX bloccato dai Cloudflare Workers?</strong> Alcuni provider OSINT (in particolare <strong>IntelX free tier</strong>) <strong>blackistano gli IP cloud</strong>: il Worker invia la richiesta ma upstream non risponde mai (timeout). Se vedi questo comportamento, deploya il proxy alternativo qui sotto su <strong>Render.com</strong>, che usa un range IP diverso.
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <h3 style="font-size: 1rem;">Proxy alternativo: Node Express su Render.com (se il Worker viene bloccato)</h3>
+          <ol class="muted" style="margin: 8px 0 12px 20px; font-size: 0.85rem; line-height: 1.7;">
+            <li>Vai su <a href="https://render.com/" target="_blank" rel="noopener">render.com</a> → registrati gratis (no carta).</li>
+            <li>New → <strong>Web Service</strong> → <strong>Public Git Repository</strong>.</li>
+            <li>Crea una repo GitHub vuota e mettici 2 file: <code>server.js</code> (codice qui sotto) e <code>package.json</code> (con <code>"dependencies": {"express": "^4.18.0", "node-fetch": "^2.7.0"}</code>). Connettila a Render.</li>
+            <li>Build command: <code>npm install</code> · Start command: <code>node server.js</code> · Plan: <strong>Free</strong>.</li>
+            <li>Una volta deployato, copia la URL (es. <code>https://iihub-proxy-xxxx.onrender.com</code>) e incollala nel campo proxy qui sopra.</li>
+          </ol>
+          <div class="row-flex" style="margin-bottom: 8px;">
+            <button class="btn btn-ghost btn-sm" id="copyExpress"><i data-lucide="copy"></i> Copia codice server.js</button>
+          </div>
+<pre id="expressCode" style="background:var(--bg-2);padding:14px;border-radius:8px;overflow:auto;max-height:280px;font-size:0.78rem;line-height:1.45;">const express = require('express');
+const fetch = require('node-fetch');
+const app = express();
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': '*',
+  'Access-Control-Expose-Headers': '*',
+  'Access-Control-Max-Age': '86400'
+};
+
+app.use(express.raw({ type: '*/*', limit: '5mb' }));
+
+app.options('*', (req, res) => res.set(CORS).status(204).end());
+
+app.all('*', async (req, res) => {
+  const target = req.url.slice(2); // rimuove '/?'
+  if (!target) return res.set(CORS).status(400).send('Missing target URL');
+
+  let targetUrl;
+  try { targetUrl = new URL(decodeURIComponent(target)); }
+  catch { return res.set(CORS).status(400).send('Invalid URL'); }
+
+  const headers = { ...req.headers };
+  ['host','connection','content-length','origin','referer','x-forwarded-for','x-forwarded-proto','x-forwarded-host','x-render-origin-server']
+    .forEach(h => delete headers[h]);
+  if (!headers['user-agent']) headers['user-agent'] = 'IIHub-Proxy/1.0';
+
+  try {
+    const upstream = await fetch(targetUrl.toString(), {
+      method: req.method,
+      headers,
+      body: ['GET','HEAD'].includes(req.method) ? undefined : req.body,
+      redirect: 'follow',
+      timeout: 25000
+    });
+    res.status(upstream.status);
+    Object.entries(CORS).forEach(([k, v]) => res.set(k, v));
+    upstream.headers.forEach((v, k) => {
+      if (!['transfer-encoding','content-encoding'].includes(k.toLowerCase())) res.set(k, v);
+    });
+    upstream.body.pipe(res);
+  } catch (e) {
+    res.set(CORS).status(502).send('Upstream fetch failed: ' + e.message);
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log('IIHub proxy on ' + PORT));</pre>
         </div>
 
         <div class="card">
@@ -1507,6 +1577,11 @@ function renderConfigForm() {
   if (copyWorkerBtn) copyWorkerBtn.onclick = () => {
     navigator.clipboard.writeText($('#workerCode').textContent);
     toast('Codice Worker copiato. Incollalo nell\'editor Cloudflare e fai Deploy.', 'success');
+  };
+  const copyExpressBtn = $('#copyExpress');
+  if (copyExpressBtn) copyExpressBtn.onclick = () => {
+    navigator.clipboard.writeText($('#expressCode').textContent);
+    toast('Codice server.js copiato. Crea repo GitHub e collegala a Render.com.', 'success');
   };
 
   const testProxyBtn = $('#testProxyBtn');
