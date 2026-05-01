@@ -552,6 +552,13 @@ input, select, textarea { font-family: inherit; }
           <p>Aggrega risultati OSINT da IntelX, HIBP, BreachDirectory, LeakIX e DeHashed in un report unificato.</p>
         </div>
 
+        <div class="warning-box" id="firstRunHint">
+          <i data-lucide="info" class="icon"></i>
+          <div>
+            <strong>Prima volta?</strong> Vai in <a href="#config">Configurazione</a> (icona ingranaggio nella sidebar) e inserisci almeno una API Key. Il <strong>CORS Proxy</strong> è già impostato di default a <code>corsproxy.io</code> — necessario perché i provider OSINT bloccano le chiamate dirette dal browser.
+          </div>
+        </div>
+
         <div class="card">
           <div class="row-flex" style="margin-bottom: 16px;">
             <div style="flex: 2; min-width: 240px;">
@@ -664,8 +671,11 @@ input, select, textarea { font-family: inherit; }
           </div>
           <div class="input-group">
             <input id="corsProxyInput" class="input" placeholder="https://corsproxy.io/?" value="" />
-            <button class="btn btn-ghost" id="clearProxy"><i data-lucide="x"></i></button>
+            <button class="btn btn-ghost" id="clearProxy" title="Rimuovi proxy"><i data-lucide="x"></i></button>
           </div>
+          <p class="muted" style="margin-top: 8px; font-size: 0.78rem;">
+            Default attivo: <code>https://corsproxy.io/?</code> — svuota il campo per disabilitare e chiamare i provider direttamente.
+          </p>
         </div>
 
         <div class="card">
@@ -749,7 +759,7 @@ const state = {
     master: ''
   },
   intelxTier: 'free',           // 'free' -> free.intelx.io, 'paid' -> 2.intelx.io
-  corsProxy: '',                 // opzionale, es. 'https://corsproxy.io/?'
+  corsProxy: 'https://corsproxy.io/?',  // default attivo per usabilità out-of-the-box
   aiConsent: false,
   recent: [],
   lastResults: null,
