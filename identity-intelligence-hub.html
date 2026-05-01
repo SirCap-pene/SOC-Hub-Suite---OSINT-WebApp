@@ -667,7 +667,7 @@ input, select, textarea { font-family: inherit; }
           </p>
           <div class="warning-box" style="background: color-mix(in srgb, var(--danger) 12%, transparent); border-color: color-mix(in srgb, var(--danger) 35%, transparent);">
             <i data-lucide="shield-alert" class="icon" style="color: var(--danger);"></i>
-            <div><strong>Privacy:</strong> usando un proxy pubblico le tue API Key e le query passano da un server di terze parti. Per dati sensibili usa solo proxy tuoi.</div>
+            <div><strong>Limite proxy pubblici:</strong> servizi come <code>corsproxy.io</code> spesso <strong>strippano gli header custom</strong> (x-key, Authorization, X-RapidAPI-Key) — quindi le API che usano questi header per autenticarsi falliscono comunque. <strong>Per usare davvero questa app deploya il tuo Cloudflare Worker</strong> (vedi sotto, 2 minuti gratis).</div>
           </div>
           <div class="input-group">
             <input id="corsProxyInput" class="input" placeholder="https://corsproxy.io/?" value="" />
@@ -676,6 +676,48 @@ input, select, textarea { font-family: inherit; }
           <p class="muted" style="margin-top: 8px; font-size: 0.78rem;">
             Default attivo: <code>https://corsproxy.io/?</code> — svuota il campo per disabilitare e chiamare i provider direttamente.
           </p>
+
+          <div class="divider"></div>
+          <h3 style="font-size: 1rem;">Deploy del tuo Cloudflare Worker (consigliato)</h3>
+          <ol class="muted" style="margin: 8px 0 12px 20px; font-size: 0.85rem; line-height: 1.7;">
+            <li>Vai su <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">dash.cloudflare.com</a> → <strong>Workers & Pages</strong> → <strong>Create</strong> → <strong>Hello World</strong>.</li>
+            <li>Copia il codice qui sotto e incollalo nell'editor del Worker, poi <strong>Deploy</strong>.</li>
+            <li>Copia la URL che Cloudflare ti dà (es. <code>https://iihub-proxy.<i>tuo-account</i>.workers.dev/?</code>) e incollala nel campo proxy qui sopra.</li>
+          </ol>
+          <div class="row-flex" style="margin-bottom: 8px;">
+            <button class="btn btn-ghost btn-sm" id="copyWorker"><i data-lucide="copy"></i> Copia codice Worker</button>
+          </div>
+<pre id="workerCode" style="background:var(--bg-2);padding:14px;border-radius:8px;overflow:auto;max-height:280px;font-size:0.78rem;line-height:1.45;">export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+    const target = url.search.slice(1); // tutto dopo il "?"
+    if (!target) return new Response('Missing target URL', { status: 400 });
+    let targetUrl;
+    try { targetUrl = new URL(decodeURIComponent(target)); }
+    catch { return new Response('Invalid target URL', { status: 400 }); }
+
+    const headers = new Headers(request.headers);
+    headers.delete('host');
+    headers.delete('origin');
+    headers.delete('referer');
+
+    const proxied = await fetch(targetUrl.toString(), {
+      method: request.method,
+      headers,
+      body: ['GET','HEAD'].includes(request.method) ? undefined : request.body,
+      redirect: 'follow'
+    });
+
+    const respHeaders = new Headers(proxied.headers);
+    respHeaders.set('Access-Control-Allow-Origin', '*');
+    respHeaders.set('Access-Control-Allow-Methods', '*');
+    respHeaders.set('Access-Control-Allow-Headers', '*');
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: respHeaders });
+    }
+    return new Response(proxied.body, { status: proxied.status, headers: respHeaders });
+  }
+};</pre>
         </div>
 
         <div class="card">
@@ -797,7 +839,7 @@ const SERVICES = {
   hibp: { name: 'HIBP', color: '#6daa45', limit: Infinity, plan: 'Free', limitUnit: 'illimitato', pricing: 'https://haveibeenpwned.com/API/v3' },
   breachdirectory: { name: 'BreachDirectory', color: '#fdab43', limit: 50, plan: 'Free (RapidAPI)', limitUnit: '/mese', pricing: 'https://rapidapi.com/rohan-patra/api/breachdirectory' },
   leakix: { name: 'LeakIX', color: '#a86fdf', limit: 20000, plan: 'Free Researcher', limitUnit: '/account', pricing: 'https://leakix.net/auth/login' },
-  dehashed: { name: 'DeHashed', color: '#dd6974', limit: 5, plan: 'Freemium', limitUnit: ' result/q', pricing: 'https://dehashed.com/pricing' }
+  dehashed: { name: 'DeHashed', color: '#dd6974', limit: 5, plan: 'Paid only', limitUnit: ' result/q', pricing: 'https://dehashed.com/pricing', paidOnly: true }
 };
 
 const TYPE_TO_SERVICES = {
@@ -1097,7 +1139,7 @@ function renderServiceChecks() {
       <input type="checkbox" data-svc="${id}" ${enabled && configured ? 'checked' : ''} ${enabled ? '' : 'disabled'} />
       <span class="svc-dot" style="background:${svc.color}"></span>
       <span style="flex:1;">${svc.name}</span>
-      ${configured ? '' : '<span class="badge neutral" style="font-size:0.65rem;">setup</span>'}
+      ${svc.paidOnly ? '<span class="badge warning" style="font-size:0.65rem;">paid</span>' : (configured ? '' : '<span class="badge neutral" style="font-size:0.65rem;">setup</span>')}
     `;
     container.appendChild(div);
   });
@@ -1352,8 +1394,8 @@ function renderConfigForm() {
     { id: 'intelx', label: 'IntelX API Key', mask: true, svc: 'intelx' },
     { id: 'rapidapi', label: 'RapidAPI Key (BreachDirectory)', mask: true, svc: 'breachdirectory' },
     { id: 'leakix', label: 'LeakIX API Key', mask: true, svc: 'leakix' },
-    { id: 'dehashedEmail', label: 'DeHashed Email', mask: false, svc: 'dehashed' },
-    { id: 'dehashed', label: 'DeHashed API Key', mask: true, svc: 'dehashed' }
+    { id: 'dehashedEmail', label: 'DeHashed Email (richiede subscription a pagamento)', mask: false, svc: 'dehashed' },
+    { id: 'dehashed', label: 'DeHashed API Key (richiede subscription a pagamento)', mask: true, svc: 'dehashed' }
   ];
   apiForm.innerHTML = fields.map(f => fieldHtml(f)).join('');
 
@@ -1378,15 +1420,27 @@ function renderConfigForm() {
     const svc = b.dataset.svc;
     if (svc === 'anthropic') {
       if (!state.apiKeys.anthropic) return toast('Inserisci la Anthropic API Key.', 'warning');
+      const prevConsent = state.aiConsent;
+      state.aiConsent = true;
       toast('Test Anthropic in corso...', 'info');
-      const r = await callClaude('test', 'email', [{ ping: true }]);
-      toast(r.error ? 'Anthropic: ' + r.error.slice(0, 80) : 'Anthropic OK ✓', r.error ? 'error' : 'success');
+      const r = await callClaude('ping', 'email', [{ ping: true }]);
+      state.aiConsent = prevConsent;
+      toast(r.error ? 'Anthropic: ' + r.error.slice(0, 120) : 'Anthropic OK ✓', r.error ? 'error' : 'success');
       return;
     }
     if (!isServiceConfigured(svc)) return toast(`${SERVICES[svc].name}: chiave mancante.`, 'warning');
     toast(`Test ${SERVICES[svc].name} in corso...`, 'info');
-    const r = await CONNECTORS[svc]('test', 'email');
-    toast(`${SERVICES[svc].name}: ${r.status === 'success' ? 'OK ✓' : (r.error || 'errore')}`, r.status === 'success' ? 'success' : 'error');
+    // Usa keyword realistiche per i test
+    const testKw = svc === 'leakix' ? '8.8.8.8' : 'test@example.com';
+    const testType = svc === 'leakix' ? 'ip' : 'email';
+    const r = await CONNECTORS[svc](testKw, testType);
+    if (r.status === 'success') {
+      toast(`${SERVICES[svc].name}: OK ✓ (${r.count || 0} risultati)`, 'success');
+    } else if (r.cors) {
+      toast(`${SERVICES[svc].name}: CORS bloccato — il proxy attuale non inoltra gli header. Deploya un Cloudflare Worker (Configurazione → CORS Proxy).`, 'error');
+    } else {
+      toast(`${SERVICES[svc].name}: ${(r.error || 'errore').slice(0, 140)}`, 'error');
+    }
   });
 
   $('#aiConsent').checked = state.aiConsent;
@@ -1399,6 +1453,11 @@ function renderConfigForm() {
     proxyInp.addEventListener('input', () => { state.corsProxy = proxyInp.value.trim(); });
     $('#clearProxy').onclick = () => { proxyInp.value = ''; state.corsProxy = ''; };
   }
+  const copyWorkerBtn = $('#copyWorker');
+  if (copyWorkerBtn) copyWorkerBtn.onclick = () => {
+    navigator.clipboard.writeText($('#workerCode').textContent);
+    toast('Codice Worker copiato. Incollalo nell\'editor Cloudflare e fai Deploy.', 'success');
+  };
 
   // IntelX tier
   $$('input[name=intelxTier]').forEach(r => {
