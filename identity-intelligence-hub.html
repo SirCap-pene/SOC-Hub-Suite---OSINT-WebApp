@@ -677,6 +677,10 @@ input, select, textarea { font-family: inherit; }
             Anteprima URL chiamata: <code id="proxyPreview" style="font-size:0.72rem;">—</code><br>
             Esempi accettati: <code>https://tuo-worker.workers.dev/</code> · <code>https://tuo-worker.workers.dev/?</code> · <code>https://corsproxy.io/?</code>. Il <code>?</code> finale viene aggiunto automaticamente.
           </p>
+          <div class="row-flex" style="margin-top: 10px;">
+            <button class="btn btn-ghost btn-sm" id="testProxyBtn"><i data-lucide="zap"></i> Test Proxy (via HIBP, senza auth)</button>
+            <span id="testProxyResult" class="muted" style="font-size: 0.8rem;"></span>
+          </div>
 
           <div class="divider"></div>
           <h3 style="font-size: 1rem;">Deploy del tuo Cloudflare Worker (consigliato)</h3>
@@ -718,6 +722,8 @@ export default {
     const headers = new Headers(request.headers);
     ['host','origin','referer','cf-connecting-ip','cf-ipcountry','cf-ray','cf-visitor','x-forwarded-for','x-forwarded-proto','x-real-ip']
       .forEach(h => headers.delete(h));
+    // Alcuni provider rifiutano richieste senza User-Agent
+    if (!headers.has('user-agent')) headers.set('user-agent', 'IIHub-Proxy/1.0');
 
     let upstream;
     try {
@@ -897,7 +903,7 @@ function toast(msg, type = 'info') {
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3500);
 }
 
-function fetchTimeout(url, options = {}, ms = 15000) {
+function fetchTimeout(url, options = {}, ms = 30000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   return fetch(url, { ...options, signal: ctrl.signal })
@@ -1493,6 +1499,33 @@ function renderConfigForm() {
   if (copyWorkerBtn) copyWorkerBtn.onclick = () => {
     navigator.clipboard.writeText($('#workerCode').textContent);
     toast('Codice Worker copiato. Incollalo nell\'editor Cloudflare e fai Deploy.', 'success');
+  };
+
+  const testProxyBtn = $('#testProxyBtn');
+  const testProxyRes = $('#testProxyResult');
+  if (testProxyBtn) testProxyBtn.onclick = async () => {
+    if (!state.corsProxy) { testProxyRes.innerHTML = '<span style="color:var(--warning);">Imposta prima la URL del proxy</span>'; return; }
+    testProxyRes.innerHTML = '<span class="spinner" style="display:inline-block;width:12px;height:12px;"></span> Test in corso...';
+    const t0 = performance.now();
+    try {
+      // HIBP non richiede auth, è veloce e ritorna sempre dati
+      const r = await fetchTimeout(proxied('https://api.pwnedpasswords.com/range/AAAAA'), {}, 20000);
+      const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
+      if (!r.ok) {
+        testProxyRes.innerHTML = `<span style="color:var(--danger);">Proxy risponde HTTP ${r.status} dopo ${elapsed}s — Worker non configurato bene</span>`;
+        return;
+      }
+      const text = await r.text();
+      if (text && text.includes(':')) {
+        testProxyRes.innerHTML = `<span style="color:var(--success);">✓ Proxy OK · ${elapsed}s · ${text.split('\\n').length} righe ricevute</span>`;
+      } else {
+        testProxyRes.innerHTML = `<span style="color:var(--warning);">Risposta inattesa dopo ${elapsed}s — controlla il codice del Worker</span>`;
+      }
+    } catch (e) {
+      const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
+      const msg = e.name === 'AbortError' ? `Timeout dopo ${elapsed}s` : (e.message || 'Errore');
+      testProxyRes.innerHTML = `<span style="color:var(--danger);">${msg} — il Worker non risponde o la URL è sbagliata</span>`;
+    }
   };
 
   // IntelX tier
