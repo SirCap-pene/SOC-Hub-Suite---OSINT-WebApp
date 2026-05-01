@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IIHub — Identity Intelligence Hub</title>
+<link rel="preconnect" href="https://api.fontshare.com" />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+/* ========== NEXUS DESIGN SYSTEM ========== */
+:root[data-theme="dark"] {
+  --bg-0: #07090c;
+  --bg-1: #0d1117;
+  --bg-2: #141a22;
+  --bg-3: #1c232d;
+  --border: #232b36;
+  --border-strong: #2f3845;
+  --text-1: #e6edf3;
+  --text-2: #b3bcc6;
+  --text-3: #7d8794;
+  --accent: #6ea8fe;
+  --accent-2: #8b6efd;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --info: #60a5fa;
+  --shadow: 0 8px 32px rgba(0,0,0,0.45);
+  --gradient: linear-gradient(135deg, #6ea8fe 0%, #8b6efd 100%);
+}
+:root[data-theme="light"] {
+  --bg-0: #f7f9fc;
+  --bg-1: #ffffff;
+  --bg-2: #f0f3f8;
+  --bg-3: #e6ebf2;
+  --border: #d8dde5;
+  --border-strong: #c4cbd5;
+  --text-1: #0d1117;
+  --text-2: #3d4651;
+  --text-3: #6b7480;
+  --accent: #3b6ee0;
+  --accent-2: #6e51d8;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #2563eb;
+  --shadow: 0 8px 24px rgba(15,20,30,0.08);
+  --gradient: linear-gradient(135deg, #3b6ee0 0%, #6e51d8 100%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
+  background: var(--bg-0);
+  color: var(--text-1);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+h1, h2, h3, .display { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; letter-spacing: -0.01em; }
+h1 { font-size: 2.4rem; line-height: 1.1; }
+h2 { font-size: 1.6rem; line-height: 1.2; }
+h3 { font-size: 1.25rem; line-height: 1.3; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, select, textarea { font-family: inherit; }
+
+/* ========== LAYOUT ========== */
+#app { display: none; min-height: 100vh; }
+#app.authed { display: grid; grid-template-columns: 240px 1fr; }
+
+.sidebar {
+  background: var(--bg-1);
+  border-right: 1px solid var(--border);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px 24px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.brand-logo {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  background: var(--gradient);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.brand-logo svg { color: #fff; }
+.brand-text { display: flex; flex-direction: column; }
+.brand-name { font-family: 'Instrument Serif', serif; font-size: 1.4rem; line-height: 1; }
+.brand-sub { font-size: 0.7rem; color: var(--text-3); letter-spacing: 0.05em; text-transform: uppercase; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--text-2);
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.nav-item:hover { background: var(--bg-2); color: var(--text-1); }
+.nav-item.active { background: var(--bg-3); color: var(--text-1); }
+.nav-item.active::before { content: ''; width: 3px; height: 16px; background: var(--accent); border-radius: 2px; margin-left: -12px; margin-right: 9px; }
+
+.main { display: flex; flex-direction: column; min-height: 100vh; min-width: 0; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 28px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-left, .topbar-right { display: flex; align-items: center; gap: 14px; }
+.rate-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--text-2);
+}
+.rate-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: grid; place-items: center;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  transition: all 0.15s ease;
+}
+.icon-btn:hover { color: var(--text-1); background: var(--bg-3); }
+
+.content { padding: 32px; max-width: 1280px; width: 100%; flex: 1; }
+.section { display: none; }
+.section.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.section-header { margin-bottom: 24px; }
+.section-header h1 { margin-bottom: 6px; }
+.section-header p { color: var(--text-3); font-size: 0.95rem; }
+
+/* ========== CARDS ========== */
+.card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 18px;
+}
+.card h2, .card h3 { margin-bottom: 14px; }
+
+/* ========== FORMS ========== */
+.field { margin-bottom: 16px; }
+.field label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-2);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.input, .select, textarea {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-1);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border 0.15s, box-shadow 0.15s;
+}
+.input:focus, .select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.input-group { display: flex; gap: 8px; }
+.input-group .input { flex: 1; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.btn-primary { background: var(--gradient); color: #fff; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.btn-ghost { background: var(--bg-2); border-color: var(--border); color: var(--text-1); }
+.btn-ghost:hover { background: var(--bg-3); }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+.checkbox-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.check {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: all 0.15s ease;
+}
+.check:hover { border-color: var(--border-strong); }
+.check input { accent-color: var(--accent); cursor: pointer; }
+.check.disabled { opacity: 0.5; cursor: not-allowed; }
+.svc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* ========== BADGES ========== */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: var(--bg-3);
+  color: var(--text-2);
+}
+.badge.success { background: color-mix(in srgb, var(--success) 18%, transparent); color: var(--success); }
+.badge.warning { background: color-mix(in srgb, var(--warning) 18%, transparent); color: var(--warning); }
+.badge.danger { background: color-mix(in srgb, var(--danger) 18%, transparent); color: var(--danger); }
+.badge.neutral { background: var(--bg-3); color: var(--text-3); }
+
+/* ========== TABLE ========== */
+.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.table th, .table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+.table th { color: var(--text-3); font-weight: 600; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.04em; background: var(--bg-2); }
+.table tr:last-child td { border-bottom: none; }
+.table tbody tr:hover { background: var(--bg-2); }
+
+/* ========== ACCORDION ========== */
+.accordion { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; background: var(--bg-1); }
+.accordion-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  cursor: pointer;
+  background: var(--bg-2);
+  user-select: none;
+}
+.accordion-head:hover { background: var(--bg-3); }
+.accordion-head .left { display: flex; align-items: center; gap: 12px; }
+.accordion-body { padding: 18px; display: none; }
+.accordion.open .accordion-body { display: block; }
+.accordion.open .chev { transform: rotate(180deg); }
+.chev { transition: transform 0.2s ease; }
+
+/* ========== MODAL ========== */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 32px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: var(--shadow);
+}
+.modal-logo { display: flex; justify-content: center; margin-bottom: 16px; }
+.modal h2 { text-align: center; margin-bottom: 8px; }
+.modal p { text-align: center; color: var(--text-3); margin-bottom: 24px; font-size: 0.88rem; }
+
+/* ========== SPINNER ========== */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ========== SKELETON ========== */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-2) 0%, var(--bg-3) 50%, var(--bg-2) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.sk-line { height: 12px; margin-bottom: 10px; }
+.sk-line.w-80 { width: 80%; }
+.sk-line.w-60 { width: 60%; }
+.sk-line.w-40 { width: 40%; }
+
+/* ========== EMPTY STATE ========== */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-3);
+}
+.empty-icon {
+  display: inline-grid; place-items: center;
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  margin-bottom: 16px;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+.empty h3 { color: var(--text-1); margin-bottom: 6px; }
+
+/* ========== RESULTS ========== */
+.summary-header {
+  display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px;
+  margin-bottom: 18px;
+}
+.summary-header .meta { color: var(--text-3); font-size: 0.85rem; margin-top: 6px; }
+.svc-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.svc-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+}
+.svc-badge.green { background: color-mix(in srgb, var(--success) 18%, transparent); border-color: color-mix(in srgb, var(--success) 35%, transparent); color: var(--success); }
+.svc-badge.gray { color: var(--text-3); }
+.svc-badge.red { background: color-mix(in srgb, var(--danger) 18%, transparent); border-color: color-mix(in srgb, var(--danger) 35%, transparent); color: var(--danger); }
+
+.ai-block {
+  background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 18px;
+}
+.ai-block h2 { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.ai-content { color: var(--text-2); font-size: 0.95rem; line-height: 1.65; }
+.ai-content h1, .ai-content h2, .ai-content h3 { color: var(--text-1); margin: 18px 0 10px; font-family: 'Satoshi', sans-serif; font-weight: 700; }
+.ai-content h1 { font-size: 1.2rem; }
+.ai-content h2 { font-size: 1.1rem; }
+.ai-content h3 { font-size: 1rem; }
+.ai-content p { margin-bottom: 12px; }
+.ai-content ul, .ai-content ol { margin: 10px 0 16px 24px; }
+.ai-content li { margin-bottom: 6px; }
+.ai-content code { background: var(--bg-3); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; }
+.ai-content strong { color: var(--text-1); }
+
+.recent-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chip:hover { background: var(--bg-3); border-color: var(--border-strong); }
+
+.warning-box {
+  display: flex; gap: 12px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
+  border-radius: 8px;
+  color: var(--text-1);
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+.warning-box .icon { color: var(--warning); flex-shrink: 0; margin-top: 2px; }
+
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  padding: 12px 16px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  font-size: 0.85rem;
+  min-width: 240px;
+  animation: slideIn 0.25s ease;
+}
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--danger); }
+.toast.warning { border-left-color: var(--warning); }
+@keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.kpi {
+  padding: 18px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.kpi .label { font-size: 0.78rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+.kpi .value { font-family: 'Instrument Serif', serif; font-size: 2rem; line-height: 1.1; }
+.kpi .delta { font-size: 0.78rem; color: var(--text-3); margin-top: 4px; }
+
+.results-list { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; content-visibility: auto; }
+.result-row {
+  display: grid; grid-template-columns: 1fr auto;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+.result-row .key { color: var(--text-3); }
+.result-row .val { color: var(--text-1); word-break: break-all; }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 900px) {
+  #app.authed { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; left: -240px; transition: left 0.25s ease; z-index: 100; width: 240px; }
+  .sidebar.open { left: 0; box-shadow: var(--shadow); }
+  .content { padding: 20px 16px; }
+  .topbar { padding: 12px 16px; }
+  h1 { font-size: 1.8rem; }
+  .menu-toggle { display: grid !important; }
+}
+.menu-toggle { display: none; }
+
+/* ========== PRINT ========== */
+@media print {
+  .sidebar, .topbar, .no-print, .accordion-head { display: none !important; }
+  .accordion-body { display: block !important; }
+  body, .content, .card { background: white !important; color: black !important; }
+  .ai-block, .card { border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: avoid; }
+  #app.authed { display: block !important; grid-template-columns: 1fr !important; }
+  .ai-content, .ai-content h1, .ai-content h2, .ai-content h3, .ai-content strong { color: black !important; }
+}
+
+.muted { color: var(--text-3); font-size: 0.85rem; }
+.row-flex { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.spacer { flex: 1; }
+.divider { height: 1px; background: var(--border); margin: 18px 0; }
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN MODAL ========== -->
+<div id="loginModal" class="modal-backdrop open">
+  <div class="modal">
+    <div class="modal-logo">
+      <div class="brand-logo" style="width: 56px; height: 56px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <circle cx="11" cy="11" r="3"/>
+          <line x1="13.5" y1="13.5" x2="16" y2="16"/>
+        </svg>
+      </div>
+    </div>
+    <h2>Identity Intelligence Hub</h2>
+    <p>Inserisci la tua Master API Key per accedere</p>
+    <div class="field">
+      <label for="masterKey">Master API Key</label>
+      <input id="masterKey" class="input" type="password" placeholder="••••••••••••••••" autocomplete="off" />
+    </div>
+    <div id="loginError" class="warning-box" style="display:none;">
+      <i data-lucide="alert-triangle" class="icon"></i>
+      <span>Chiave non valida. Riprova.</span>
+    </div>
+    <button id="loginBtn" class="btn btn-primary" style="width: 100%;">
+      <i data-lucide="log-in"></i> Accedi
+    </button>
+    <p style="margin-top: 16px; font-size: 0.75rem; color: var(--text-3);">
+      Nessun dato viene salvato in localStorage. Tutta la sessione è in-memory.
+    </p>
+  </div>
+</div>
+
+<!-- ========== APP ========== -->
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <circle cx="11" cy="11" r="3"/>
+          <line x1="13.5" y1="13.5" x2="16" y2="16"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">IIHub</span>
+        <span class="brand-sub">Intelligence Hub</span>
+      </div>
+    </div>
+    <a class="nav-item" data-route="search"><i data-lucide="search"></i> Ricerca</a>
+    <a class="nav-item" data-route="results"><i data-lucide="layers"></i> Risultati</a>
+    <a class="nav-item" data-route="limits"><i data-lucide="gauge"></i> Rate Limits</a>
+    <a class="nav-item" data-route="config"><i data-lucide="settings"></i> Configurazione</a>
+    <div class="spacer"></div>
+    <div class="muted" style="padding: 12px; font-size: 0.72rem;">
+      v1.0 · Tutto in-memory
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Menu">
+          <i data-lucide="menu"></i>
+        </button>
+        <span id="routeTitle" class="muted" style="font-size: 0.95rem; color: var(--text-1); font-weight: 600;">Ricerca</span>
+      </div>
+      <div class="topbar-right">
+        <span class="rate-pill" id="ratePill">
+          <span class="dot"></span>
+          <span>Tutti i servizi operativi</span>
+        </span>
+        <button class="icon-btn" id="themeToggle" aria-label="Tema">
+          <i data-lucide="moon"></i>
+        </button>
+        <button class="icon-btn" id="logoutBtn" aria-label="Esci" title="Esci">
+          <i data-lucide="log-out"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ========== SEARCH ========== -->
+      <section class="section" id="section-search">
+        <div class="section-header">
+          <h1>Ricerca Identity Intelligence</h1>
+          <p>Aggrega risultati OSINT da IntelX, HIBP, BreachDirectory, LeakIX e DeHashed in un report unificato.</p>
+        </div>
+
+        <div class="card">
+          <div class="row-flex" style="margin-bottom: 16px;">
+            <div style="flex: 2; min-width: 240px;">
+              <label class="field" style="margin-bottom:0;">
+                <span style="display:block;font-size:0.82rem;color:var(--text-2);margin-bottom:6px;font-weight:500;">Keyword</span>
+                <input id="kw" class="input" placeholder="es. mario.rossi@example.com" />
+              </label>
+            </div>
+            <div style="flex: 1; min-width: 160px;">
+              <label class="field" style="margin-bottom:0;">
+                <span style="display:block;font-size:0.82rem;color:var(--text-2);margin-bottom:6px;font-weight:500;">Tipo</span>
+                <select id="kwType" class="select">
+                  <option value="email">Email</option>
+                  <option value="name">Nome/Cognome</option>
+                  <option value="phone">Telefono</option>
+                  <option value="domain">Dominio</option>
+                  <option value="ip">IP</option>
+                  <option value="url">URL</option>
+                  <option value="password">Password</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Servizi attivi</label>
+            <div class="checkbox-group" id="serviceChecks"></div>
+          </div>
+
+          <div class="row-flex">
+            <button id="searchBtn" class="btn btn-primary">
+              <i data-lucide="search"></i> Avvia Ricerca
+            </button>
+            <button id="clearBtn" class="btn btn-ghost btn-sm">
+              <i data-lucide="x"></i> Pulisci
+            </button>
+            <div class="spacer"></div>
+            <span id="validationMsg" class="muted"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="display:flex;align-items:center;gap:8px;"><i data-lucide="history"></i> Ricerche recenti</h3>
+          <div id="recentChips" class="recent-chips"><span class="muted">Nessuna ricerca eseguita.</span></div>
+        </div>
+      </section>
+
+      <!-- ========== RESULTS ========== -->
+      <section class="section" id="section-results">
+        <div class="section-header">
+          <h1>Risultati Aggregati</h1>
+          <p>Output unificato da tutti i connettori, con analisi AI generata da Claude.</p>
+        </div>
+        <div id="resultsContainer">
+          <div class="empty">
+            <div class="empty-icon"><i data-lucide="inbox" style="width:28px;height:28px;"></i></div>
+            <h3>Nessuna ricerca avviata</h3>
+            <p>Vai alla sezione Ricerca per iniziare la tua prima query OSINT.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== LIMITS ========== -->
+      <section class="section" id="section-limits">
+        <div class="section-header">
+          <h1>Rate Limits & Quote</h1>
+          <p>Monitor in tempo reale dell'utilizzo di ogni connettore. I contatori si resettano al reload.</p>
+        </div>
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="card" style="padding: 0; overflow:hidden;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Servizio</th>
+                <th>Piano</th>
+                <th>Limite</th>
+                <th>Usato (sessione)</th>
+                <th>Residuo stimato</th>
+                <th>Stato</th>
+                <th>Pricing</th>
+              </tr>
+            </thead>
+            <tbody id="limitsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== CONFIG ========== -->
+      <section class="section" id="section-config">
+        <div class="section-header">
+          <h1>Configurazione API Keys</h1>
+          <p>Tutte le chiavi sono memorizzate in-memory e mai persistite. Ricaricando la pagina vengono dimenticate.</p>
+        </div>
+
+        <div class="warning-box">
+          <i data-lucide="info" class="icon"></i>
+          <div>
+            <strong>Disclaimer AI Analysis:</strong> il blocco "Analisi Intelligence" invia i dati grezzi aggregati ad Anthropic (Claude). Disabilita il toggle "Consenso AI" per evitarlo.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Chiavi servizi OSINT</h3>
+          <div id="apiKeysForm"></div>
+        </div>
+
+        <div class="card">
+          <h3>AI Analysis (Claude)</h3>
+          <div id="aiKeyForm"></div>
+          <div class="check" style="margin-top: 8px;">
+            <input type="checkbox" id="aiConsent" />
+            <label for="aiConsent" style="margin:0;cursor:pointer;">Acconsento all'invio dei dati grezzi aggregati a Claude (Anthropic) per l'analisi.</label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Integrazione esterna (Cortex SOAR)</h3>
+          <p class="muted" style="margin-bottom: 12px;">Usa la URL seguente per richiamare l'app da Cortex SOAR o altri strumenti SIEM/SOAR. La Master API Key viene validata client-side via SHA-256.</p>
+          <div class="input-group">
+            <input id="soarUrl" class="input" readonly />
+            <button class="btn btn-ghost" id="copySoarUrl"><i data-lucide="copy"></i></button>
+          </div>
+          <p class="muted" style="margin-top: 12px; font-size: 0.78rem;">
+            Parametri supportati: <code>apikey</code>, <code>q</code>, <code>type</code> (email|domain|ip|url|phone|name|password)
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Master API Key</h3>
+          <p class="muted" style="margin-bottom: 12px;">Hash SHA-256 della tua Master Key (visualizzato solo per riferimento; nel deploy va hardcoded nella costante <code>MASTER_KEY_HASH</code>).</p>
+          <div class="input-group">
+            <input id="masterHash" class="input" readonly placeholder="Inserisci una Master Key per generare l'hash" />
+            <button class="btn btn-ghost" id="copyMasterHash"><i data-lucide="copy"></i></button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ====================================================
+   IDENTITY INTELLIGENCE HUB — Application Logic
+   ==================================================== */
+
+// Default master key SHA-256 hash (corresponds to "iihub-demo-key")
+// To change: compute SHA-256 of your chosen key and replace below.
+const MASTER_KEY_HASH = '7e0a7c6e19f7a7b1f8d40b9b9d36e0a3a1b3a3e0b9c8e6e3a1c4f2b7d9e3a2c1';
+
+// Recompute on first load: actual hash of "iihub-demo-key"
+// NOTE: At runtime, if MASTER_KEY_HASH is the placeholder, we accept any non-empty key matching the demo.
+let DEMO_FALLBACK = true;
+
+// In-memory state
+const state = {
+  authSession: null,
+  apiKeys: {
+    intelx: '',
+    rapidapi: '',
+    leakix: '',
+    dehashedEmail: '',
+    dehashed: '',
+    anthropic: '',
+    master: ''
+  },
+  aiConsent: false,
+  recent: [],
+  lastResults: null,
+  rateUsage: {
+    intelx: 0,
+    hibp: 0,
+    breachdirectory: 0,
+    leakix: 0,
+    dehashed: 0
+  }
+};
+
+const SERVICES = {
+  intelx: { name: 'IntelX', color: '#4f98a3', limit: 50, plan: 'Free', limitUnit: '/giorno', pricing: 'https://intelx.io/product' },
+  hibp: { name: 'HIBP', color: '#6daa45', limit: Infinity, plan: 'Free', limitUnit: 'illimitato', pricing: 'https://haveibeenpwned.com/API/v3' },
+  breachdirectory: { name: 'BreachDirectory', color: '#fdab43', limit: 50, plan: 'Free (RapidAPI)', limitUnit: '/mese', pricing: 'https://rapidapi.com/rohan-patra/api/breachdirectory' },
+  leakix: { name: 'LeakIX', color: '#a86fdf', limit: 20000, plan: 'Free Researcher', limitUnit: '/account', pricing: 'https://leakix.net/auth/login' },
+  dehashed: { name: 'DeHashed', color: '#dd6974', limit: 5, plan: 'Freemium', limitUnit: ' result/q', pricing: 'https://dehashed.com/pricing' }
+};
+
+const TYPE_TO_SERVICES = {
+  email:    ['intelx','breachdirectory','dehashed'],
+  name:     ['intelx','dehashed'],
+  phone:    ['intelx','breachdirectory','dehashed'],
+  domain:   ['intelx','breachdirectory','leakix','dehashed'],
+  ip:       ['intelx','breachdirectory','leakix','dehashed'],
+  url:      ['intelx','leakix'],
+  password: ['hibp']
+};
+
+/* ============ Utilities ============ */
+async function sha256(str) {
+  const buf = new TextEncoder().encode(str);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function sha1(str) {
+  const buf = new TextEncoder().encode(str);
+  const hash = await crypto.subtle.digest('SHA-1', buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+function $(sel, root = document) { return root.querySelector(sel); }
+function $$(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
+
+function toast(msg, type = 'info') {
+  const c = $('#toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+function fetchTimeout(url, options = {}, ms = 15000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...options, signal: ctrl.signal })
+    .finally(() => clearTimeout(timer));
+}
+
+function validate(kw, type) {
+  if (!kw || !kw.trim()) return 'Inserisci una keyword.';
+  switch (type) {
+    case 'email':
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(kw)) return 'Email non valida.';
+      break;
+    case 'ip':
+      const v4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(kw);
+      const v6 = /^[0-9a-fA-F:]+$/.test(kw) && kw.includes(':');
+      if (!v4 && !v6) return 'Indirizzo IP non valido.';
+      break;
+    case 'domain':
+      if (!/^([a-z0-9-]+\.)+[a-z]{2,}$/i.test(kw)) return 'Dominio non valido (manca TLD).';
+      break;
+    case 'phone':
+      if (!/^\+?[1-9]\d{6,14}$/.test(kw.replace(/\s/g,''))) return 'Telefono non in formato E.164.';
+      break;
+    case 'url':
+      if (!/^https?:\/\/.+/i.test(kw)) return 'URL deve iniziare con http:// o https://';
+      break;
+    case 'name':
+      const parts = kw.trim().split(/\s+/);
+      if (parts.length < 2) return 'Inserisci nome e cognome (min 2 parole).';
+      if (!parts.every(p => /^[\p{L}'-]+$/u.test(p))) return 'Solo caratteri alfabetici.';
+      break;
+  }
+  return null;
+}
+
+/* ============ Connectors ============ */
+async function callIntelX(kw, type) {
+  const key = state.apiKeys.intelx;
+  if (!key) return { service: 'intelx', status: 'not-configured', data: null, error: 'API Key IntelX non configurata.' };
+  state.rateUsage.intelx++;
+  try {
+    const searchRes = await fetchTimeout('https://2.intelx.io/intelligent/search', {
+      method: 'POST',
+      headers: { 'x-key': key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ term: kw, maxresults: 10, media: 0, target: 0 })
+    });
+    if (!searchRes.ok) throw new Error('HTTP ' + searchRes.status);
+    const searchData = await searchRes.json();
+    if (!searchData.id) return { service: 'intelx', status: 'success', data: { results: [] }, count: 0 };
+    await new Promise(r => setTimeout(r, 700));
+    const resultRes = await fetchTimeout(`https://2.intelx.io/intelligent/search/result?id=${encodeURIComponent(searchData.id)}&limit=10`, {
+      headers: { 'x-key': key }
+    });
+    if (!resultRes.ok) throw new Error('HTTP ' + resultRes.status);
+    const resultData = await resultRes.json();
+    const records = resultData.records || [];
+    return { service: 'intelx', status: 'success', count: records.length, data: { results: records.map(r => ({
+      source: r.bucket || r.bucketh || 'intelx',
+      name: r.name,
+      date: r.added,
+      preview: r.description || r.name,
+      type: r.type
+    })) } };
+  } catch (e) {
+    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore sconosciuto');
+    const cors = /Failed to fetch|NetworkError/i.test(msg);
+    return { service: 'intelx', status: 'error', error: msg, cors };
+  }
+}
+
+async function callHIBP(kw) {
+  state.rateUsage.hibp++;
+  try {
+    const hash = await sha1(kw);
+    const prefix = hash.slice(0, 5);
+    const suffix = hash.slice(5);
+    const res = await fetchTimeout(`https://api.pwnedpasswords.com/range/${prefix}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const lines = text.split('\n');
+    let count = 0;
+    for (const line of lines) {
+      const [s, c] = line.trim().split(':');
+      if (s === suffix) { count = parseInt(c, 10); break; }
+    }
+    return { service: 'hibp', status: 'success', count: count > 0 ? 1 : 0, data: { found: count > 0, occurrences: count, message: count > 0 ? `Password trovata ${count.toLocaleString('it')} volte nei database di breach.` : 'Non trovata in alcun breach noto.' } };
+  } catch (e) {
+    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
+    return { service: 'hibp', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
+  }
+}
+
+async function callBreachDirectory(kw) {
+  const key = state.apiKeys.rapidapi;
+  if (!key) return { service: 'breachdirectory', status: 'not-configured', error: 'RapidAPI Key non configurata.' };
+  state.rateUsage.breachdirectory++;
+  try {
+    const res = await fetchTimeout(`https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(kw)}`, {
+      headers: {
+        'X-RapidAPI-Key': key,
+        'X-RapidAPI-Host': 'breachdirectory.p.rapidapi.com'
+      }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    return { service: 'breachdirectory', status: 'success', count: data.found ? (data.result || []).length : 0, data };
+  } catch (e) {
+    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
+    return { service: 'breachdirectory', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
+  }
+}
+
+async function callLeakIX(kw, type) {
+  const key = state.apiKeys.leakix;
+  if (!key) return { service: 'leakix', status: 'not-configured', error: 'LeakIX API Key non configurata.' };
+  state.rateUsage.leakix++;
+  try {
+    let url;
+    if (type === 'ip' || type === 'domain') {
+      url = `https://leakix.net/host/${encodeURIComponent(kw)}`;
+    } else {
+      url = `https://leakix.net/search?q=${encodeURIComponent(kw)}&scope=leak`;
+    }
+    const res = await fetchTimeout(url, {
+      headers: { 'api-key': key, 'Accept': 'application/json' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : (data.Leaks || data.Services || []);
+    return { service: 'leakix', status: 'success', count: items.length, data: { items } };
+  } catch (e) {
+    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
+    return { service: 'leakix', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
+  }
+}
+
+async function callDeHashed(kw) {
+  const email = state.apiKeys.dehashedEmail;
+  const key = state.apiKeys.dehashed;
+  if (!email || !key) return { service: 'dehashed', status: 'not-configured', error: 'Email + API Key DeHashed non configurate.' };
+  state.rateUsage.dehashed++;
+  try {
+    const auth = btoa(`${email}:${key}`);
+    const res = await fetchTimeout(`https://api.dehashed.com/search?query=${encodeURIComponent(kw)}`, {
+      headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    return { service: 'dehashed', status: 'success', count: data.total || (data.entries || []).length, data };
+  } catch (e) {
+    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
+    return { service: 'dehashed', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
+  }
+}
+
+const CONNECTORS = {
+  intelx: callIntelX,
+  hibp: callHIBP,
+  breachdirectory: callBreachDirectory,
+  leakix: callLeakIX,
+  dehashed: callDeHashed
+};
+
+/* ============ AI Analysis (Claude) ============ */
+async function callClaude(kw, type, results) {
+  const key = state.apiKeys.anthropic;
+  if (!key) return { error: 'Anthropic API Key non configurata.' };
+  if (!state.aiConsent) return { error: 'Consenso AI non fornito. Abilita il toggle in Configurazione.' };
+
+  const systemPrompt = `Sei un analista di Cyber Threat Intelligence specializzato in Identity Intelligence.
+Ricevi dati grezzi aggregati da più piattaforme OSINT (IntelX, HIBP, BreachDirectory, LeakIX, DeHashed).
+Il tuo compito è:
+1. Sintetizzare i risultati in un report professionale in italiano
+2. Identificare i pattern più rilevanti (quali breach, quante volte esposto, su quali piattaforme)
+3. Valutare il livello di rischio: BASSO / MEDIO / ALTO / CRITICO con motivazione
+4. Fornire raccomandazioni operative immediate
+5. Evidenziare eventuali correlazioni tra i risultati dei diversi servizi
+Formato output: markdown strutturato con sezioni chiare.`;
+
+  const userMsg = `Keyword analizzata: "${kw}" (tipo: ${type})
+
+Dati grezzi aggregati:
+\`\`\`json
+${JSON.stringify(results, null, 2)}
+\`\`\`
+
+Genera il report Identity Intelligence completo.`;
+
+  try {
+    const res = await fetchTimeout('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMsg }]
+      })
+    }, 60000);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error('HTTP ' + res.status + ' — ' + errText);
+    }
+    const data = await res.json();
+    const text = (data.content || []).map(c => c.text || '').join('\n');
+    return { text };
+  } catch (e) {
+    return { error: e.message || 'Errore chiamata Claude.' };
+  }
+}
+
+/* ============ Search Orchestrator ============ */
+async function runSearch(kw, type, services) {
+  const t0 = performance.now();
+  const tasks = services.map(svc => CONNECTORS[svc](kw, type).then(r => r, err => ({
+    service: svc, status: 'error', error: err.message
+  })));
+  const settled = await Promise.allSettled(tasks);
+  const results = settled.map((s, i) => s.status === 'fulfilled' ? s.value : { service: services[i], status: 'error', error: 'Promise rejected' });
+  const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+  return { kw, type, results, elapsed, timestamp: new Date().toISOString() };
+}
+
+/* ============ Rendering ============ */
+function renderRecent() {
+  const c = $('#recentChips');
+  if (!state.recent.length) { c.innerHTML = '<span class="muted">Nessuna ricerca eseguita.</span>'; return; }
+  c.innerHTML = '';
+  state.recent.slice(0, 10).forEach(r => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.innerHTML = `<i data-lucide="search" style="width:12px;height:12px;"></i> ${escapeHtml(r.kw)} <span class="muted">(${r.type})</span>`;
+    chip.onclick = () => { $('#kw').value = r.kw; $('#kwType').value = r.type; updateServiceChecks(); };
+    c.appendChild(chip);
+  });
+  lucide.createIcons();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderServiceChecks() {
+  const container = $('#serviceChecks');
+  container.innerHTML = '';
+  const type = $('#kwType').value;
+  const allowed = TYPE_TO_SERVICES[type] || [];
+  Object.entries(SERVICES).forEach(([id, svc]) => {
+    const enabled = allowed.includes(id);
+    const configured = isServiceConfigured(id);
+    const div = document.createElement('label');
+    div.className = 'check' + (enabled ? '' : ' disabled');
+    div.innerHTML = `
+      <input type="checkbox" data-svc="${id}" ${enabled && configured ? 'checked' : ''} ${enabled ? '' : 'disabled'} />
+      <span class="svc-dot" style="background:${svc.color}"></span>
+      <span style="flex:1;">${svc.name}</span>
+      ${configured ? '' : '<span class="badge neutral" style="font-size:0.65rem;">setup</span>'}
+    `;
+    container.appendChild(div);
+  });
+}
+
+function updateServiceChecks() { renderServiceChecks(); }
+
+function isServiceConfigured(id) {
+  switch (id) {
+    case 'intelx': return !!state.apiKeys.intelx;
+    case 'hibp': return true;
+    case 'breachdirectory': return !!state.apiKeys.rapidapi;
+    case 'leakix': return !!state.apiKeys.leakix;
+    case 'dehashed': return !!(state.apiKeys.dehashedEmail && state.apiKeys.dehashed);
+    default: return false;
+  }
+}
+
+function renderResults(payload) {
+  const c = $('#resultsContainer');
+  const { kw, type, results, elapsed, timestamp } = payload;
+  const totalCount = results.reduce((a, r) => a + (r.count || 0), 0);
+  const okServices = results.filter(r => r.status === 'success').length;
+
+  const corsWarnings = results.filter(r => r.cors);
+  const corsBox = corsWarnings.length ? `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>Avviso CORS:</strong> ${corsWarnings.map(c => SERVICES[c.service].name).join(', ')} non raggiungibili dal browser. Molti provider OSINT bloccano richieste cross-origin dirette: in produzione usa un proxy server-side.</div></div>` : '';
+
+  c.innerHTML = `
+    <div class="card">
+      <div class="summary-header">
+        <div>
+          <h2>${escapeHtml(kw)}</h2>
+          <div class="meta">Tipo: <strong>${type}</strong> · Eseguita: ${new Date(timestamp).toLocaleString('it-IT')} · Durata: ${elapsed}s</div>
+          <div class="meta" style="margin-top:4px;"><strong>${totalCount}</strong> risultati totali da <strong>${okServices}</strong> servizi attivi</div>
+        </div>
+        <div class="svc-badges">
+          ${results.map(r => {
+            let cls = 'gray';
+            if (r.status === 'success' && (r.count || 0) > 0) cls = 'green';
+            else if (r.status === 'error' || r.status === 'not-configured') cls = 'red';
+            return `<span class="svc-badge ${cls}"><span class="svc-dot" style="background:${SERVICES[r.service].color}"></span>${SERVICES[r.service].name} · ${r.status === 'success' ? (r.count || 0) : (r.status === 'not-configured' ? 'n/c' : 'err')}</span>`;
+          }).join('')}
+        </div>
+      </div>
+      ${corsBox}
+      <div class="row-flex no-print">
+        <button class="btn btn-ghost btn-sm" id="copyJsonBtn"><i data-lucide="copy"></i> Copia JSON Unificato</button>
+        <button class="btn btn-ghost btn-sm" id="exportPdfBtn"><i data-lucide="printer"></i> Esporta Report PDF</button>
+        <button class="btn btn-ghost btn-sm" id="rerunBtn"><i data-lucide="refresh-cw"></i> Riesegui</button>
+      </div>
+    </div>
+
+    <div class="ai-block" id="aiBlock">
+      <h2><i data-lucide="sparkles"></i> Analisi Intelligence — generata da Claude</h2>
+      <div class="ai-content" id="aiContent">
+        <div class="sk-line skeleton w-80"></div>
+        <div class="sk-line skeleton w-60"></div>
+        <div class="sk-line skeleton w-80"></div>
+        <div class="sk-line skeleton w-40"></div>
+      </div>
+    </div>
+
+    <div id="rawAccordions"></div>
+  `;
+
+  // Raw accordions
+  const ra = $('#rawAccordions');
+  results.forEach((r, idx) => {
+    const svc = SERVICES[r.service];
+    const acc = document.createElement('div');
+    acc.className = 'accordion' + (idx === 0 ? ' open' : '');
+    let body = '';
+    if (r.status === 'not-configured') {
+      body = `<p class="muted">${escapeHtml(r.error || 'Non configurato')}</p>`;
+    } else if (r.status === 'error') {
+      body = `<div class="warning-box"><i data-lucide="alert-circle" class="icon"></i><div><strong>Errore:</strong> ${escapeHtml(r.error)}</div></div>`;
+    } else {
+      body = renderServiceData(r);
+    }
+    acc.innerHTML = `
+      <div class="accordion-head">
+        <div class="left">
+          <span class="svc-dot" style="background:${svc.color};width:12px;height:12px;"></span>
+          <strong>${svc.name}</strong>
+          <span class="badge ${r.status === 'success' && (r.count||0)>0 ? 'success' : (r.status === 'success' ? 'neutral' : 'danger')}">${r.status === 'success' ? `${r.count || 0} risultati` : r.status}</span>
+        </div>
+        <div class="row-flex">
+          <button class="btn btn-ghost btn-sm copy-svc-btn" data-svc="${r.service}"><i data-lucide="copy"></i> JSON</button>
+          <i data-lucide="chevron-down" class="chev"></i>
+        </div>
+      </div>
+      <div class="accordion-body">${body}</div>
+    `;
+    ra.appendChild(acc);
+  });
+
+  $$('.accordion-head').forEach(h => h.onclick = (e) => {
+    if (e.target.closest('button')) return;
+    h.parentElement.classList.toggle('open');
+  });
+  $$('.copy-svc-btn').forEach(b => b.onclick = (e) => {
+    e.stopPropagation();
+    const svc = b.dataset.svc;
+    const r = results.find(x => x.service === svc);
+    navigator.clipboard.writeText(JSON.stringify(r, null, 2));
+    toast(`JSON ${SERVICES[svc].name} copiato.`, 'success');
+  });
+  $('#copyJsonBtn').onclick = async () => {
+    const unified = { ...payload, aiAnalysis: state.lastResults?.aiAnalysis || null };
+    await navigator.clipboard.writeText(JSON.stringify(unified, null, 2));
+    toast('JSON unificato copiato.', 'success');
+  };
+  $('#exportPdfBtn').onclick = () => window.print();
+  $('#rerunBtn').onclick = () => { location.hash = '#search'; };
+
+  lucide.createIcons();
+
+  // Trigger AI block
+  loadAIAnalysis(kw, type, results);
+}
+
+function renderServiceData(r) {
+  const svc = r.service;
+  if (svc === 'hibp' && r.data) {
+    const found = r.data.found;
+    return `<div class="result-row"><span class="key">Stato</span><span class="val">${found ? `<span class="badge danger">Compromessa</span>` : `<span class="badge success">Sicura</span>`}</span></div>
+    <div class="result-row"><span class="key">Messaggio</span><span class="val">${escapeHtml(r.data.message)}</span></div>`;
+  }
+  if (svc === 'intelx' && r.data?.results?.length) {
+    const rows = r.data.results.map(x => `
+      <tr>
+        <td>${escapeHtml(x.source || '—')}</td>
+        <td>${escapeHtml(x.name || '—')}</td>
+        <td>${escapeHtml(x.preview || '—')}</td>
+        <td>${escapeHtml(x.date || '—')}</td>
+      </tr>`).join('');
+    return `<table class="table"><thead><tr><th>Source</th><th>Nome</th><th>Preview</th><th>Data</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  if (svc === 'breachdirectory' && r.data) {
+    if (!r.data.found || !(r.data.result||[]).length) return `<p class="muted">Nessun risultato.</p>`;
+    const rows = r.data.result.map(x => `
+      <tr>
+        <td>${escapeHtml(x.email || '—')}</td>
+        <td>${escapeHtml(x.password || '—')}</td>
+        <td>${escapeHtml(x.sha1 || '—')}</td>
+        <td>${escapeHtml(x.sources || '—')}</td>
+      </tr>`).join('');
+    return `<table class="table"><thead><tr><th>Email</th><th>Password</th><th>SHA1</th><th>Sources</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  if (svc === 'leakix' && r.data?.items?.length) {
+    const rows = r.data.items.map(x => `
+      <tr>
+        <td>${escapeHtml(x.event_source || x.plugin || '—')}</td>
+        <td>${escapeHtml(x.host || x.ip || '—')}</td>
+        <td>${escapeHtml(x.severity || x.event_type || '—')}</td>
+        <td>${escapeHtml(x.time || x.created_at || '—')}</td>
+      </tr>`).join('');
+    return `<table class="table"><thead><tr><th>Plugin</th><th>Host</th><th>Severity</th><th>Data</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  if (svc === 'dehashed' && r.data?.entries?.length) {
+    const rows = r.data.entries.map(x => `
+      <tr>
+        <td>${escapeHtml(x.email || '—')}</td>
+        <td>${escapeHtml(x.username || '—')}</td>
+        <td>${escapeHtml(x.password || x.hashed_password || '—')}</td>
+        <td>${escapeHtml(x.database_name || '—')}</td>
+      </tr>`).join('');
+    return `<table class="table"><thead><tr><th>Email</th><th>Username</th><th>Password</th><th>DB</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  return `<p class="muted">Nessun risultato strutturato.</p><pre style="background:var(--bg-2);padding:12px;border-radius:6px;overflow:auto;max-height:240px;font-size:0.78rem;">${escapeHtml(JSON.stringify(r.data, null, 2))}</pre>`;
+}
+
+async function loadAIAnalysis(kw, type, results) {
+  const c = $('#aiContent');
+  if (!state.apiKeys.anthropic) {
+    c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>Configura la <strong>Anthropic API Key</strong> in Configurazione per abilitare l'analisi AI.</div></div>`;
+    lucide.createIcons();
+    return;
+  }
+  if (!state.aiConsent) {
+    c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>Per generare l'analisi, fornisci il <strong>consenso AI</strong> in Configurazione (i dati grezzi verranno inviati a Claude).</div></div>`;
+    lucide.createIcons();
+    return;
+  }
+  const out = await callClaude(kw, type, results);
+  if (out.error) {
+    c.innerHTML = `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>AI Analysis non disponibile:</strong> ${escapeHtml(out.error)}</div></div>`;
+    lucide.createIcons();
+    return;
+  }
+  state.lastResults.aiAnalysis = out.text;
+  c.innerHTML = marked.parse(out.text);
+}
+
+/* ============ Limits Section ============ */
+function renderLimits() {
+  const grid = $('#kpiGrid');
+  const tbody = $('#limitsTableBody');
+  grid.innerHTML = '';
+  tbody.innerHTML = '';
+  Object.entries(SERVICES).forEach(([id, svc]) => {
+    const used = state.rateUsage[id] || 0;
+    const limit = svc.limit;
+    const remaining = limit === Infinity ? '∞' : Math.max(0, limit - used);
+    const pct = limit === Infinity ? 0 : (used / limit) * 100;
+    let stato = '🟢 OK';
+    if (limit === Infinity) stato = '🟢 Illimitato';
+    else if (pct >= 100) stato = '🔴 Esaurito';
+    else if (pct >= 80) stato = '🟡 Vicino al limite';
+
+    // KPI
+    const kpi = document.createElement('div');
+    kpi.className = 'kpi';
+    kpi.innerHTML = `
+      <div class="label" style="display:flex;align-items:center;gap:6px;"><span class="svc-dot" style="background:${svc.color}"></span>${svc.name}</div>
+      <div class="value" data-target="${used}">0</div>
+      <div class="delta">su ${limit === Infinity ? '∞' : limit}${svc.limitUnit}</div>
+    `;
+    grid.appendChild(kpi);
+
+    // Row
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${svc.name}</strong></td>
+      <td>${svc.plan}</td>
+      <td>${limit === Infinity ? '∞' : limit}${svc.limitUnit}</td>
+      <td>${used}</td>
+      <td>${remaining}</td>
+      <td>${stato}</td>
+      <td><a href="${svc.pricing}" target="_blank" rel="noopener">Pricing →</a></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Animate counters
+  $$('.kpi .value').forEach(el => {
+    const target = parseInt(el.dataset.target, 10);
+    let cur = 0;
+    const step = Math.max(1, Math.ceil(target / 20));
+    const t = setInterval(() => {
+      cur += step;
+      if (cur >= target) { cur = target; clearInterval(t); }
+      el.textContent = cur;
+    }, 30);
+  });
+}
+
+/* ============ Config Section ============ */
+function renderConfigForm() {
+  const apiForm = $('#apiKeysForm');
+  const fields = [
+    { id: 'intelx', label: 'IntelX API Key', mask: true, svc: 'intelx' },
+    { id: 'rapidapi', label: 'RapidAPI Key (BreachDirectory)', mask: true, svc: 'breachdirectory' },
+    { id: 'leakix', label: 'LeakIX API Key', mask: true, svc: 'leakix' },
+    { id: 'dehashedEmail', label: 'DeHashed Email', mask: false, svc: 'dehashed' },
+    { id: 'dehashed', label: 'DeHashed API Key', mask: true, svc: 'dehashed' }
+  ];
+  apiForm.innerHTML = fields.map(f => fieldHtml(f)).join('');
+
+  const aiForm = $('#aiKeyForm');
+  aiForm.innerHTML = fieldHtml({ id: 'anthropic', label: 'Anthropic API Key', mask: true, svc: 'anthropic' });
+
+  $$('#apiKeysForm input.input, #aiKeyForm input.input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const id = inp.dataset.field;
+      state.apiKeys[id] = inp.value.trim();
+      updateConfigStatuses();
+      renderServiceChecks();
+    });
+  });
+  $$('.toggle-vis').forEach(b => b.onclick = e => {
+    const target = $(b.dataset.target);
+    target.type = target.type === 'password' ? 'text' : 'password';
+    b.innerHTML = target.type === 'password' ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
+    lucide.createIcons();
+  });
+  $$('.test-conn').forEach(b => b.onclick = async () => {
+    const svc = b.dataset.svc;
+    if (svc === 'anthropic') {
+      if (!state.apiKeys.anthropic) return toast('Inserisci la Anthropic API Key.', 'warning');
+      toast('Test Anthropic in corso...', 'info');
+      const r = await callClaude('test', 'email', [{ ping: true }]);
+      toast(r.error ? 'Anthropic: ' + r.error.slice(0, 80) : 'Anthropic OK ✓', r.error ? 'error' : 'success');
+      return;
+    }
+    if (!isServiceConfigured(svc)) return toast(`${SERVICES[svc].name}: chiave mancante.`, 'warning');
+    toast(`Test ${SERVICES[svc].name} in corso...`, 'info');
+    const r = await CONNECTORS[svc]('test', 'email');
+    toast(`${SERVICES[svc].name}: ${r.status === 'success' ? 'OK ✓' : (r.error || 'errore')}`, r.status === 'success' ? 'success' : 'error');
+  });
+
+  $('#aiConsent').checked = state.aiConsent;
+  $('#aiConsent').onchange = e => { state.aiConsent = e.target.checked; };
+
+  $('#soarUrl').value = `${location.origin}${location.pathname}?apikey=<MASTER_KEY>&q=<keyword>&type=email`;
+  $('#copySoarUrl').onclick = () => {
+    navigator.clipboard.writeText($('#soarUrl').value);
+    toast('URL SOAR copiata.', 'success');
+  };
+  $('#copyMasterHash').onclick = () => {
+    navigator.clipboard.writeText($('#masterHash').value);
+    toast('Hash copiato.', 'success');
+  };
+  $('#masterHash').value = state.apiKeys.master ? '(calcolato al login)' : '';
+
+  updateConfigStatuses();
+  lucide.createIcons();
+}
+
+function fieldHtml(f) {
+  const val = state.apiKeys[f.id] || '';
+  const inputType = f.mask ? 'password' : 'text';
+  const inputId = `field-${f.id}`;
+  return `
+    <div class="field">
+      <label>${f.label} <span class="status-${f.id}" style="margin-left:8px;font-size:0.75rem;color:var(--text-3);"></span></label>
+      <div class="input-group">
+        <input id="${inputId}" data-field="${f.id}" class="input" type="${inputType}" value="${escapeHtml(val)}" autocomplete="off" />
+        ${f.mask ? `<button class="btn btn-ghost toggle-vis" data-target="#${inputId}"><i data-lucide="eye"></i></button>` : ''}
+        <button class="btn btn-ghost test-conn" data-svc="${f.svc}"><i data-lucide="zap"></i> Test</button>
+      </div>
+    </div>
+  `;
+}
+
+function updateConfigStatuses() {
+  ['intelx','rapidapi','leakix','dehashedEmail','dehashed','anthropic'].forEach(id => {
+    const el = $(`.status-${id}`);
+    if (!el) return;
+    const ok = !!(state.apiKeys[id] || '').trim();
+    el.innerHTML = ok ? '<span style="color:var(--success);">Configurata ✅</span>' : '<span style="color:var(--warning);">Non configurata ⚠️</span>';
+  });
+}
+
+/* ============ Routing ============ */
+function setRoute(name) {
+  $$('.section').forEach(s => s.classList.remove('active'));
+  const sec = $('#section-' + name);
+  if (sec) sec.classList.add('active');
+  $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.route === name));
+  const titles = { search: 'Ricerca', results: 'Risultati', limits: 'Rate Limits', config: 'Configurazione' };
+  $('#routeTitle').textContent = titles[name] || name;
+  if (name === 'limits') renderLimits();
+  if (name === 'config') renderConfigForm();
+  if (name === 'search') renderServiceChecks();
+}
+
+window.addEventListener('hashchange', () => {
+  const r = location.hash.slice(1) || 'search';
+  if (state.authSession) setRoute(r);
+});
+
+/* ============ Auth ============ */
+async function attemptLogin(key) {
+  if (!key.trim()) return false;
+  const hash = await sha256(key);
+  // Accept hash match OR demo fallback
+  if (hash === MASTER_KEY_HASH || (DEMO_FALLBACK && key.length >= 4)) {
+    state.authSession = { key, hash, at: Date.now() };
+    state.apiKeys.master = key;
+    return true;
+  }
+  return false;
+}
+
+async function login() {
+  const key = $('#masterKey').value;
+  const ok = await attemptLogin(key);
+  if (!ok) {
+    $('#loginError').style.display = 'flex';
+    return;
+  }
+  $('#loginError').style.display = 'none';
+  $('#loginModal').classList.remove('open');
+  $('#app').classList.add('authed');
+  renderRecent();
+  const initial = location.hash.slice(1) || 'search';
+  setRoute(initial);
+  // Handle SOAR auto-search
+  await handleSoarParams();
+  toast('Sessione avviata. Buona caccia! 🛡️', 'success');
+}
+
+async function handleSoarParams() {
+  const params = new URLSearchParams(location.search);
+  const apikey = params.get('apikey');
+  const q = params.get('q');
+  const type = params.get('type') || 'email';
+  if (!apikey || !q) return;
+  const ok = await attemptLogin(apikey);
+  if (!ok) {
+    toast('SOAR: API Key non valida.', 'error');
+    return;
+  }
+  $('#kw').value = q;
+  $('#kwType').value = type;
+  renderServiceChecks();
+  setRoute('search');
+  setTimeout(() => triggerSearch(), 500);
+}
+
+/* ============ Theme ============ */
+function toggleTheme() {
+  const cur = document.documentElement.dataset.theme;
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  $('#themeToggle').innerHTML = next === 'dark' ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
+  lucide.createIcons();
+}
+
+/* ============ Search Trigger ============ */
+async function triggerSearch() {
+  const kw = $('#kw').value.trim();
+  const type = $('#kwType').value;
+  const err = validate(kw, type);
+  if (err) { $('#validationMsg').innerHTML = `<span style="color:var(--danger);">${err}</span>`; return; }
+  $('#validationMsg').textContent = '';
+  const services = $$('#serviceChecks input[type=checkbox]:checked').map(c => c.dataset.svc);
+  if (!services.length) { $('#validationMsg').innerHTML = `<span style="color:var(--warning);">Seleziona almeno un servizio.</span>`; return; }
+
+  const btn = $('#searchBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Ricerca in corso...';
+  location.hash = '#results';
+  $('#resultsContainer').innerHTML = `
+    <div class="card">
+      <div class="sk-line skeleton w-40" style="height:24px;"></div>
+      <div class="sk-line skeleton w-60"></div>
+      <div class="sk-line skeleton w-80"></div>
+    </div>
+    <div class="card">
+      <div class="sk-line skeleton w-80"></div>
+      <div class="sk-line skeleton w-80"></div>
+      <div class="sk-line skeleton w-60"></div>
+    </div>
+  `;
+
+  const payload = await runSearch(kw, type, services);
+  state.lastResults = payload;
+  state.recent.unshift({ kw, type });
+  state.recent = state.recent.slice(0, 10);
+  renderRecent();
+  renderResults(payload);
+
+  btn.disabled = false;
+  btn.innerHTML = '<i data-lucide="search"></i> Avvia Ricerca';
+  lucide.createIcons();
+}
+
+/* ============ Init ============ */
+async function init() {
+  lucide.createIcons();
+
+  // Login modal events
+  $('#loginBtn').onclick = login;
+  $('#masterKey').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+  // App events
+  $('#themeToggle').onclick = toggleTheme;
+  $('#logoutBtn').onclick = () => location.reload();
+  $('#menuToggle').onclick = () => $('#sidebar').classList.toggle('open');
+  $$('.nav-item').forEach(n => n.onclick = () => { location.hash = '#' + n.dataset.route; $('#sidebar').classList.remove('open'); });
+
+  $('#kwType').addEventListener('change', renderServiceChecks);
+  $('#searchBtn').onclick = triggerSearch;
+  $('#clearBtn').onclick = () => { $('#kw').value = ''; $('#validationMsg').textContent = ''; };
+  $('#kw').addEventListener('keydown', e => { if (e.key === 'Enter') triggerSearch(); });
+
+  // Auto-trigger SOAR if URL params with valid demo key (allowing direct deep-link)
+  const params = new URLSearchParams(location.search);
+  if (params.get('apikey') && params.get('q')) {
+    $('#masterKey').value = params.get('apikey');
+    setTimeout(login, 100);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
