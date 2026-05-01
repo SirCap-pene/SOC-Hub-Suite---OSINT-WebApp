@@ -517,7 +517,7 @@ input, select, textarea { font-family: inherit; }
     <a class="nav-item" data-route="config"><i data-lucide="settings"></i> Configurazione</a>
     <div class="spacer"></div>
     <div class="muted" style="padding: 12px; font-size: 0.72rem;">
-      v1.0 · Tutto in-memory
+      v1.4 · Tutto in-memory
     </div>
   </aside>
 
@@ -677,9 +677,9 @@ input, select, textarea { font-family: inherit; }
             Anteprima URL chiamata: <code id="proxyPreview" style="font-size:0.72rem;">—</code><br>
             Esempi accettati: <code>https://tuo-worker.workers.dev/</code> · <code>https://tuo-worker.workers.dev/?</code> · <code>https://corsproxy.io/?</code>. Il <code>?</code> finale viene aggiunto automaticamente.
           </p>
-          <div class="row-flex" style="margin-top: 10px;">
-            <button class="btn btn-ghost btn-sm" id="testProxyBtn"><i data-lucide="zap"></i> Test Proxy (via HIBP, senza auth)</button>
-            <span id="testProxyResult" class="muted" style="font-size: 0.8rem;"></span>
+          <div class="row-flex" style="margin-top: 14px; padding: 12px; background: var(--bg-2); border-radius: 8px;">
+            <button class="btn btn-primary btn-sm" id="testProxyBtn"><i data-lucide="zap"></i> Test Proxy (diagnostico via HIBP)</button>
+            <span id="testProxyResult" class="muted" style="font-size: 0.85rem;">Verifica che il Worker inoltri correttamente — non richiede API Key</span>
           </div>
 
           <div class="divider"></div>
@@ -950,17 +950,25 @@ async function callIntelX(kw, type) {
       method: 'POST',
       headers: { 'x-key': key, 'Content-Type': 'application/json' },
       body: JSON.stringify({ term: kw, maxresults: 10, media: 0, target: 0 })
-    });
+    }, 20000);
     if (!searchRes.ok) throw new Error(await httpErr(searchRes));
     const searchData = await searchRes.json();
     if (!searchData.id) return { service: 'intelx', status: 'success', data: { results: [] }, count: 0 };
-    await new Promise(r => setTimeout(r, 700));
-    const resultRes = await fetchTimeout(proxied(`${base}/intelligent/search/result?id=${encodeURIComponent(searchData.id)}&limit=10`), {
-      headers: { 'x-key': key }
-    });
-    if (!resultRes.ok) throw new Error(await httpErr(resultRes));
-    const resultData = await resultRes.json();
-    const records = resultData.records || [];
+
+    // Polling: free tier richiede tempo per popolare i risultati. status=0 = ancora in elaborazione, status=1 = no more results, status=2 = errore
+    let records = [];
+    for (let attempt = 0; attempt < 6; attempt++) {
+      await new Promise(r => setTimeout(r, 1500));
+      const resultRes = await fetchTimeout(proxied(`${base}/intelligent/search/result?id=${encodeURIComponent(searchData.id)}&limit=10&statistics=0&previewlines=8`), {
+        headers: { 'x-key': key }
+      }, 15000);
+      if (!resultRes.ok) throw new Error(await httpErr(resultRes));
+      const resultData = await resultRes.json();
+      records = resultData.records || [];
+      if (resultData.status === 1 || records.length >= 10) break; // finito o abbiamo abbastanza
+      if (resultData.status === 2) break; // errore upstream, esci
+    }
+
     return { service: 'intelx', status: 'success', count: records.length, data: { results: records.map(r => ({
       source: r.bucket || r.bucketh || 'intelx',
       name: r.name,
@@ -969,7 +977,7 @@ async function callIntelX(kw, type) {
       type: r.type
     })) } };
   } catch (e) {
-    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore sconosciuto');
+    const msg = e.name === 'AbortError' ? 'Timeout (>20s) — free tier IntelX a volte è molto lento o blocca IP cloud' : (e.message || 'Errore sconosciuto');
     const cors = /Failed to fetch|NetworkError/i.test(msg);
     return { service: 'intelx', status: 'error', error: msg, cors };
   }
