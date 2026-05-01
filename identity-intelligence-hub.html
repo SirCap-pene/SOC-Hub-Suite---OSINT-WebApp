@@ -1023,7 +1023,7 @@ input, select, textarea { font-family: inherit; }
       <i data-lucide="log-in"></i> Accedi
     </button>
     <p style="margin-top: 16px; font-size: 0.75rem; color: var(--text-3);">
-      Nessun dato viene salvato in localStorage. Tutta la sessione è in-memory.
+      Le API Key dei servizi sono cifrate (AES-GCM) in localStorage con la Master Key come passphrase. Persistite tra sessioni. Master Key e risultati non vengono mai salvati.
     </p>
   </div>
 </div>
@@ -1054,9 +1054,9 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v1.6</span>
+        <span>v1.7</span>
         <span class="version-sep">·</span>
-        <span>in-memory</span>
+        <span>encrypted</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
         OSINT · CTI · BREACH-DATA
@@ -1256,7 +1256,16 @@ input, select, textarea { font-family: inherit; }
         <div class="section-header">
           <div class="section-eyebrow">Setup</div>
           <h1>Configurazione <span style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">API Keys</span></h1>
-          <p>Tutte le chiavi sono memorizzate in-memory e mai persistite. Ricaricando la pagina vengono dimenticate.</p>
+          <p>Le chiavi sono <strong>cifrate (AES-GCM 256)</strong> in localStorage usando la tua Master Key come passphrase. Si ripristinano al login successivo. Senza la Master Key corretta non sono leggibili.</p>
+        </div>
+
+        <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap: 16px; flex-wrap: wrap;">
+          <div>
+            <div class="section-eyebrow" style="margin-bottom: 4px;">Persistence</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.84rem;" id="persistStatus">○ Non salvato</div>
+            <div class="muted" style="font-size: 0.78rem; margin-top: 4px;">Storage: <code>localStorage[intelhub-config-v1]</code> · cifrato con PBKDF2(120k) + AES-GCM</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="clearStoredBtn"><i data-lucide="trash-2"></i> Cancella configurazione salvata</button>
         </div>
 
         <div class="warning-box">
@@ -1565,6 +1574,94 @@ async function sha1(str) {
   const buf = new TextEncoder().encode(str);
   const hash = await crypto.subtle.digest('SHA-1', buf);
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+/* ============ Encrypted persistence ============ */
+const STORAGE_KEY = 'intelhub-config-v1';
+
+async function deriveKey(passphrase, salt) {
+  const km = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 120000, hash: 'SHA-256' },
+    km,
+    { name: 'AES-GCM', length: 256 },
+    false, ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptBlob(passphrase, payload) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(passphrase, salt);
+  const ct = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(payload))
+  );
+  return { v: 1, s: btoa(String.fromCharCode(...salt)), i: btoa(String.fromCharCode(...iv)), c: btoa(String.fromCharCode(...new Uint8Array(ct))) };
+}
+
+async function decryptBlob(passphrase, blob) {
+  const salt = Uint8Array.from(atob(blob.s), c => c.charCodeAt(0));
+  const iv = Uint8Array.from(atob(blob.i), c => c.charCodeAt(0));
+  const ct = Uint8Array.from(atob(blob.c), c => c.charCodeAt(0));
+  const key = await deriveKey(passphrase, salt);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+let _persistTimer = null;
+function schedulePersist() {
+  if (_persistTimer) clearTimeout(_persistTimer);
+  _persistTimer = setTimeout(persistConfig, 600);
+}
+
+async function persistConfig() {
+  if (!state.authSession?.key) return;
+  try {
+    const payload = {
+      apiKeys: { ...state.apiKeys, master: '' },
+      intelxTier: state.intelxTier,
+      corsProxy: state.corsProxy,
+      aiConsent: state.aiConsent,
+      savedAt: new Date().toISOString()
+    };
+    const blob = await encryptBlob(state.authSession.key, payload);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(blob));
+    state.lastSavedAt = payload.savedAt;
+    updatePersistStatus();
+  } catch (e) { /* silent: never expose key data */ }
+}
+
+async function loadPersistedConfig(masterKey) {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return false;
+  try {
+    const blob = JSON.parse(raw);
+    const data = await decryptBlob(masterKey, blob);
+    if (data.apiKeys) state.apiKeys = { ...state.apiKeys, ...data.apiKeys, master: masterKey };
+    if (data.intelxTier) state.intelxTier = data.intelxTier;
+    if (typeof data.corsProxy === 'string') state.corsProxy = data.corsProxy;
+    if (typeof data.aiConsent === 'boolean') state.aiConsent = data.aiConsent;
+    state.lastSavedAt = data.savedAt;
+    return true;
+  } catch (e) { return false; }
+}
+
+function clearPersistedConfig() {
+  localStorage.removeItem(STORAGE_KEY);
+  state.lastSavedAt = null;
+}
+
+function updatePersistStatus() {
+  const el = document.getElementById('persistStatus');
+  if (!el) return;
+  if (state.lastSavedAt) {
+    const d = new Date(state.lastSavedAt);
+    el.innerHTML = `<span style="color: var(--success);">●</span> Salvato (cifrato) · ${d.toLocaleTimeString('it-IT')}`;
+  } else {
+    el.innerHTML = `<span style="color: var(--text-3);">○</span> Non salvato — verrà cifrato al primo input`;
+  }
 }
 
 function $(sel, root = document) { return root.querySelector(sel); }
@@ -2161,6 +2258,7 @@ function renderConfigForm() {
       state.apiKeys[id] = inp.value.trim();
       updateConfigStatuses();
       renderServiceChecks();
+      schedulePersist();
     });
   });
   $$('.toggle-vis').forEach(b => b.onclick = e => {
@@ -2197,7 +2295,7 @@ function renderConfigForm() {
   });
 
   $('#aiConsent').checked = state.aiConsent;
-  $('#aiConsent').onchange = e => { state.aiConsent = e.target.checked; };
+  $('#aiConsent').onchange = e => { state.aiConsent = e.target.checked; schedulePersist(); };
 
   // CORS proxy
   const proxyInp = $('#corsProxyInput');
@@ -2214,11 +2312,13 @@ function renderConfigForm() {
     proxyInp.addEventListener('input', () => {
       state.corsProxy = proxyInp.value.trim();
       updatePreview();
+      schedulePersist();
     });
     $('#clearProxy').onclick = () => {
       proxyInp.value = '';
       state.corsProxy = '';
       updatePreview();
+      schedulePersist();
     };
   }
   const copyWorkerBtn = $('#copyWorker');
@@ -2262,7 +2362,7 @@ function renderConfigForm() {
   // IntelX tier
   $$('input[name=intelxTier]').forEach(r => {
     r.checked = (r.value === state.intelxTier);
-    r.onchange = () => { if (r.checked) state.intelxTier = r.value; };
+    r.onchange = () => { if (r.checked) { state.intelxTier = r.value; schedulePersist(); } };
   });
 
   $('#soarUrl').value = `${location.origin}${location.pathname}?apikey=<MASTER_KEY>&q=<keyword>&type=email`;
@@ -2275,6 +2375,16 @@ function renderConfigForm() {
     toast('Hash copiato.', 'success');
   };
   $('#masterHash').value = state.apiKeys.master ? '(calcolato al login)' : '';
+
+  // Persist UI
+  updatePersistStatus();
+  const clearBtn = $('#clearStoredBtn');
+  if (clearBtn) clearBtn.onclick = () => {
+    if (!confirm('Cancellare le chiavi cifrate salvate in localStorage?\n\nDovrai re-immetterle al prossimo login.')) return;
+    clearPersistedConfig();
+    updatePersistStatus();
+    toast('Configurazione cifrata cancellata.', 'success');
+  };
 
   updateConfigStatuses();
   lucide.createIcons();
@@ -2348,6 +2458,31 @@ async function login() {
     return;
   }
   $('#loginError').style.display = 'none';
+  // Carica config cifrata se presente
+  const hadStored = localStorage.getItem(STORAGE_KEY);
+  let restored = false;
+  if (hadStored) {
+    restored = await loadPersistedConfig(key);
+    if (!restored) {
+      // Master Key diversa rispetto a quella usata per cifrare → fallisce decryption
+      $('#loginError').innerHTML = '<i data-lucide="alert-triangle" class="icon"></i><span>Master Key non corrisponde alle chiavi salvate. Inserisci la chiave originale o cancella i dati locali.</span>';
+      $('#loginError').style.display = 'flex';
+      lucide.createIcons();
+      // Mostra opzione per pulire
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-ghost btn-sm';
+      btn.style.marginTop = '8px';
+      btn.innerHTML = '<i data-lucide="trash-2"></i> Cancella dati cifrati e procedi';
+      btn.onclick = () => {
+        clearPersistedConfig();
+        $('#loginError').style.display = 'none';
+        login();
+      };
+      $('#loginError').appendChild(btn);
+      lucide.createIcons();
+      return;
+    }
+  }
   $('#loginModal').classList.remove('open');
   $('#app').classList.add('authed');
   renderRecent();
@@ -2355,7 +2490,7 @@ async function login() {
   setRoute(initial);
   // Handle SOAR auto-search
   await handleSoarParams();
-  toast('Sessione avviata. Buona caccia! 🛡️', 'success');
+  toast(restored ? 'Configurazione cifrata ripristinata. ✓' : 'Sessione avviata. Buona caccia! 🛡️', 'success');
 }
 
 async function handleSoarParams() {
