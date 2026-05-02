@@ -485,6 +485,14 @@ input, select, textarea { font-family: inherit; }
 .table th { color: var(--text-3); font-weight: 600; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.04em; background: var(--bg-2); }
 .table tr:last-child td { border-bottom: none; }
 .table tbody tr:hover { background: var(--bg-2); }
+.td-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--accent);
+  white-space: nowrap;
+  font-weight: 500;
+}
+.date-cell { display: inline-block; padding: 2px 8px; background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 4px; }
 
 /* ========== ACCORDION ========== */
 .accordion { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; background: var(--bg-1); }
@@ -1359,7 +1367,7 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v1.9.1</span>
+        <span>v2.0</span>
         <span class="version-sep">·</span>
         <span>NOVA</span>
       </div>
@@ -1725,51 +1733,49 @@ input, select, textarea { font-family: inherit; }
 
         <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap: 16px; flex-wrap: wrap;">
           <div>
-            <div class="section-eyebrow" style="margin-bottom: 4px;">Persistence</div>
-            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.84rem;" id="persistStatus">○ Non salvato</div>
-            <div class="muted" style="font-size: 0.78rem; margin-top: 4px;">Storage: <code>localStorage[intelhub-config-v1]</code> · cifrato con PBKDF2(120k) + AES-GCM</div>
+            <div class="section-eyebrow" style="margin-bottom: 4px;" data-i18n="persist.eyebrow">Persistence</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.84rem;" id="persistStatus">○ Not saved</div>
+            <div class="muted" style="font-size: 0.78rem; margin-top: 4px;"><span data-i18n="persist.storageInfo">Storage: </span><code>localStorage[intelhub-config-v1]</code><span data-i18n="persist.encryptedWith"> · encrypted with PBKDF2(120k) + AES-GCM</span></div>
           </div>
-          <button class="btn btn-ghost btn-sm" id="clearStoredBtn"><i data-lucide="trash-2"></i> Cancella configurazione salvata</button>
+          <button class="btn btn-ghost btn-sm" id="clearStoredBtn"><i data-lucide="trash-2"></i> <span data-i18n="persist.clearBtn">Clear stored configuration</span></button>
         </div>
 
         <div class="warning-box">
           <i data-lucide="info" class="icon"></i>
           <div>
-            <strong>Disclaimer AI Analysis:</strong> il blocco "Analisi Intelligence" invia i dati grezzi aggregati ad Anthropic (Claude). Disabilita il toggle "Consenso AI" per evitarlo.
+            <strong data-i18n="config.aiDisclaimer.bold">AI Analysis disclaimer:</strong><span data-i18n="config.aiDisclaimer.body"> the "Intelligence Analysis" block sends raw aggregated data to Anthropic (Claude). Disable the "AI Consent" toggle to opt out.</span>
           </div>
         </div>
 
         <div class="card">
-          <h3>CORS Proxy (opzionale ma consigliato)</h3>
-          <p class="muted" style="margin-bottom: 12px;">
-            La maggior parte dei provider OSINT (LeakIX, BreachDirectory, IntelX, DeHashed) <strong>non consente chiamate dirette dal browser</strong> per via delle policy CORS. Configura un proxy per inoltrare le richieste. Esempi pubblici: <code>https://corsproxy.io/?</code>, <code>https://api.allorigins.win/raw?url=</code>. Per uso reale, deploya un proxy tuo (Cloudflare Worker, Nginx, etc.).
-          </p>
+          <h3 data-i18n="cors.title">CORS Proxy (optional but recommended)</h3>
+          <p class="muted" style="margin-bottom: 12px;" data-i18n-html="cors.desc.html"></p>
           <div class="warning-box" style="background: color-mix(in srgb, var(--danger) 12%, transparent); border-color: color-mix(in srgb, var(--danger) 35%, transparent);">
             <i data-lucide="shield-alert" class="icon" style="color: var(--danger);"></i>
-            <div><strong>Limite proxy pubblici:</strong> servizi come <code>corsproxy.io</code> spesso <strong>strippano gli header custom</strong> (x-key, Authorization, X-RapidAPI-Key) — quindi le API che usano questi header per autenticarsi falliscono comunque. <strong>Per usare davvero questa app deploya il tuo Cloudflare Worker</strong> (vedi sotto, 2 minuti gratis).</div>
+            <div><strong data-i18n="cors.publicWarn.bold">Public proxies limit:</strong><span data-i18n-html="cors.publicWarn.body"></span></div>
           </div>
           <div class="input-group">
-            <input id="corsProxyInput" class="input" placeholder="https://il-tuo-worker.workers.dev/" value="" />
-            <button class="btn btn-ghost" id="clearProxy" title="Rimuovi proxy"><i data-lucide="x"></i></button>
+            <input id="corsProxyInput" class="input" placeholder="https://your-worker.workers.dev/" value="" />
+            <button class="btn btn-ghost" id="clearProxy" title="Clear"><i data-lucide="x"></i></button>
           </div>
           <p class="muted" style="margin-top: 8px; font-size: 0.78rem;">
-            Anteprima URL chiamata: <code id="proxyPreview" style="font-size:0.72rem;">—</code><br>
-            Esempi accettati: <code>https://tuo-worker.workers.dev/</code> · <code>https://tuo-worker.workers.dev/?</code> · <code>https://corsproxy.io/?</code>. Il <code>?</code> finale viene aggiunto automaticamente.
+            <span data-i18n="cors.preview">Call URL preview:</span> <code id="proxyPreview" style="font-size:0.72rem;">—</code><br>
+            <span data-i18n-html="cors.examples.html"></span>
           </p>
           <div class="row-flex" style="margin-top: 14px; padding: 12px; background: var(--bg-2); border-radius: 8px;">
-            <button class="btn btn-primary btn-sm" id="testProxyBtn"><i data-lucide="zap"></i> Test Proxy (diagnostico via HIBP)</button>
-            <span id="testProxyResult" class="muted" style="font-size: 0.85rem;">Verifica che il Worker inoltri correttamente — non richiede API Key</span>
+            <button class="btn btn-primary btn-sm" id="testProxyBtn"><i data-lucide="zap"></i> <span data-i18n="cors.testProxy">Test Proxy (HIBP diagnostic)</span></button>
+            <span id="testProxyResult" class="muted" style="font-size: 0.85rem;" data-i18n="cors.testProxyHint">Verifies the Worker forwards correctly — no API Key needed</span>
           </div>
 
           <div class="divider"></div>
-          <h3 style="font-size: 1rem;">Deploy del tuo Cloudflare Worker (consigliato)</h3>
+          <h3 style="font-size: 1rem;" data-i18n="worker.title">Deploy your Cloudflare Worker (recommended)</h3>
           <ol class="muted" style="margin: 8px 0 12px 20px; font-size: 0.85rem; line-height: 1.7;">
-            <li>Vai su <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">dash.cloudflare.com</a> → <strong>Workers & Pages</strong> → <strong>Create</strong> → <strong>Hello World</strong>.</li>
-            <li>Copia il codice qui sotto e incollalo nell'editor del Worker, poi <strong>Deploy</strong>.</li>
-            <li>Copia la URL che Cloudflare ti dà (es. <code>https://intel-hub-proxy.<i>tuo-account</i>.workers.dev/?</code>) e incollala nel campo proxy qui sopra.</li>
+            <li data-i18n-html="worker.step1.html"></li>
+            <li data-i18n-html="worker.step2.html"></li>
+            <li data-i18n-html="worker.step3.html"></li>
           </ol>
           <div class="row-flex" style="margin-bottom: 8px;">
-            <button class="btn btn-ghost btn-sm" id="copyWorker"><i data-lucide="copy"></i> Copia codice Worker</button>
+            <button class="btn btn-ghost btn-sm" id="copyWorker"><i data-lucide="copy"></i> <span data-i18n="worker.copyBtn">Copy Worker code</span></button>
           </div>
 <pre id="workerCode" style="background:var(--bg-2);padding:14px;border-radius:8px;overflow:auto;max-height:280px;font-size:0.78rem;line-height:1.45;">const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -1826,21 +1832,21 @@ export default {
           <div class="warning-box" style="margin-top: 16px;">
             <i data-lucide="alert-triangle" class="icon"></i>
             <div>
-              <strong>IntelX bloccato dai Cloudflare Workers?</strong> Alcuni provider OSINT (in particolare <strong>IntelX free tier</strong>) <strong>blackistano gli IP cloud</strong>: il Worker invia la richiesta ma upstream non risponde mai (timeout). Se vedi questo comportamento, deploya il proxy alternativo qui sotto su <strong>Render.com</strong>, che usa un range IP diverso.
+              <strong data-i18n="worker.intelxWarn.bold">IntelX blocked by Cloudflare Workers?</strong><span data-i18n-html="worker.intelxWarn.body"></span>
             </div>
           </div>
 
           <div class="divider"></div>
-          <h3 style="font-size: 1rem;">Proxy alternativo: Node Express su Render.com (se il Worker viene bloccato)</h3>
+          <h3 style="font-size: 1rem;" data-i18n="render.title">Alternative proxy: Node Express on Render.com</h3>
           <ol class="muted" style="margin: 8px 0 12px 20px; font-size: 0.85rem; line-height: 1.7;">
-            <li>Vai su <a href="https://render.com/" target="_blank" rel="noopener">render.com</a> → registrati gratis (no carta).</li>
-            <li>New → <strong>Web Service</strong> → <strong>Public Git Repository</strong>.</li>
-            <li>Crea una repo GitHub vuota e mettici 2 file: <code>server.js</code> (codice qui sotto) e <code>package.json</code> (con <code>"dependencies": {"express": "^4.18.0", "node-fetch": "^2.7.0"}</code>). Connettila a Render.</li>
-            <li>Build command: <code>npm install</code> · Start command: <code>node server.js</code> · Plan: <strong>Free</strong>.</li>
-            <li>Una volta deployato, copia la URL (es. <code>https://intel-hub-proxy-xxxx.onrender.com</code>) e incollala nel campo proxy qui sopra.</li>
+            <li data-i18n-html="render.step1.html"></li>
+            <li data-i18n-html="render.step2.html"></li>
+            <li data-i18n-html="render.step3.html"></li>
+            <li data-i18n-html="render.step4.html"></li>
+            <li data-i18n-html="render.step5.html"></li>
           </ol>
           <div class="row-flex" style="margin-bottom: 8px;">
-            <button class="btn btn-ghost btn-sm" id="copyExpress"><i data-lucide="copy"></i> Copia codice server.js</button>
+            <button class="btn btn-ghost btn-sm" id="copyExpress"><i data-lucide="copy"></i> <span data-i18n="render.copyBtn">Copy server.js code</span></button>
           </div>
 <pre id="expressCode" style="background:var(--bg-2);padding:14px;border-radius:8px;overflow:auto;max-height:280px;font-size:0.78rem;line-height:1.45;">const express = require('express');
 const fetch = require('node-fetch');
@@ -1895,9 +1901,9 @@ app.listen(PORT, () => console.log('IntelHub proxy on ' + PORT));</pre>
         </div>
 
         <div class="card">
-          <h3>Chiavi servizi OSINT</h3>
+          <h3 data-i18n="config.osintKeys">OSINT services keys</h3>
           <div class="field">
-            <label>IntelX Tier</label>
+            <label data-i18n="config.intelxTier">IntelX Tier</label>
             <div class="row-flex" style="gap: 16px;">
               <label class="check" style="cursor:pointer;">
                 <input type="radio" name="intelxTier" value="free" checked />
@@ -1913,31 +1919,31 @@ app.listen(PORT, () => console.log('IntelHub proxy on ' + PORT));</pre>
         </div>
 
         <div class="card">
-          <h3>AI Analysis (Claude)</h3>
+          <h3 data-i18n="config.aiSection">AI Analysis (Claude)</h3>
           <div id="aiKeyForm"></div>
           <div class="check" style="margin-top: 8px;">
             <input type="checkbox" id="aiConsent" />
-            <label for="aiConsent" style="margin:0;cursor:pointer;">Acconsento all'invio dei dati grezzi aggregati a Claude (Anthropic) per l'analisi.</label>
+            <label for="aiConsent" style="margin:0;cursor:pointer;" data-i18n="config.aiConsent">I consent to sending raw aggregated data to Claude (Anthropic) for analysis.</label>
           </div>
         </div>
 
         <div class="card">
-          <h3>Integrazione esterna (Cortex SOAR)</h3>
-          <p class="muted" style="margin-bottom: 12px;">Usa la URL seguente per richiamare l'app da Cortex SOAR o altri strumenti SIEM/SOAR. La Master API Key viene validata client-side via SHA-256.</p>
+          <h3 data-i18n="config.soarTitle">External integration (Cortex SOAR)</h3>
+          <p class="muted" style="margin-bottom: 12px;" data-i18n="config.soarDesc">Use the URL below to call the app from Cortex SOAR or other SIEM/SOAR tools. The Master API Key is validated client-side via SHA-256.</p>
           <div class="input-group">
             <input id="soarUrl" class="input" readonly />
             <button class="btn btn-ghost" id="copySoarUrl"><i data-lucide="copy"></i></button>
           </div>
           <p class="muted" style="margin-top: 12px; font-size: 0.78rem;">
-            Parametri supportati: <code>apikey</code>, <code>q</code>, <code>type</code> (email|domain|ip|url|phone|name|password)
+            <span data-i18n="config.soarParams">Supported parameters:</span> <code>apikey</code>, <code>q</code>, <code>type</code> (email|domain|ip|url|phone|name|password)
           </p>
         </div>
 
         <div class="card">
-          <h3>Master API Key</h3>
-          <p class="muted" style="margin-bottom: 12px;">Hash SHA-256 della tua Master Key (visualizzato solo per riferimento; nel deploy va hardcoded nella costante <code>MASTER_KEY_HASH</code>).</p>
+          <h3 data-i18n="config.masterTitle">Master API Key</h3>
+          <p class="muted" style="margin-bottom: 12px;" data-i18n="config.masterDesc">SHA-256 hash of your Master Key (shown for reference; in production hardcoded in the MASTER_KEY_HASH constant).</p>
           <div class="input-group">
-            <input id="masterHash" class="input" readonly placeholder="Inserisci una Master Key per generare l'hash" />
+            <input id="masterHash" class="input" readonly />
             <button class="btn btn-ghost" id="copyMasterHash"><i data-lucide="copy"></i></button>
           </div>
         </div>
@@ -2013,11 +2019,11 @@ async function httpErr(res) {
 }
 
 const SERVICES = {
-  intelx: { name: 'IntelX', color: '#4f98a3', limit: 50, plan: 'Free', limitUnit: '/giorno', pricing: 'https://intelx.io/product' },
-  hibp: { name: 'HIBP Pwned Passwords', color: '#6daa45', limit: Infinity, plan: 'No-Auth', limitUnit: ' (k-anonymity)', pricing: 'https://haveibeenpwned.com/Passwords', noAuth: true },
-  breachdirectory: { name: 'BreachDirectory', color: '#fdab43', limit: 50, plan: 'Free (RapidAPI)', limitUnit: '/mese', pricing: 'https://rapidapi.com/rohan-patra/api/breachdirectory' },
-  leakix: { name: 'LeakIX', color: '#a86fdf', limit: 20000, plan: 'Free Researcher', limitUnit: '/account', pricing: 'https://leakix.net/auth/login' },
-  dehashed: { name: 'DeHashed', color: '#dd6974', limit: 5, plan: 'Paid only', limitUnit: ' result/q', pricing: 'https://dehashed.com/pricing', paidOnly: true }
+  intelx: { name: 'IntelX', color: '#4f98a3', limit: 50, plan: 'Free', planKey: 'free', limitUnit: '/giorno', unitKey: 'day', pricing: 'https://intelx.io/product' },
+  hibp: { name: 'HIBP Pwned Passwords', color: '#6daa45', limit: Infinity, plan: 'No-Auth', planKey: 'noauth', limitUnit: ' (k-anonymity)', unitKey: 'kanon', pricing: 'https://haveibeenpwned.com/Passwords', noAuth: true },
+  breachdirectory: { name: 'BreachDirectory', color: '#fdab43', limit: 50, plan: 'Free (RapidAPI)', planKey: 'rapid', limitUnit: '/mese', unitKey: 'month', pricing: 'https://rapidapi.com/rohan-patra/api/breachdirectory' },
+  leakix: { name: 'LeakIX', color: '#a86fdf', limit: 20000, plan: 'Free Researcher', planKey: 'researcher', limitUnit: '/account', unitKey: 'account', pricing: 'https://leakix.net/auth/login' },
+  dehashed: { name: 'DeHashed', color: '#dd6974', limit: 5, plan: 'Paid only', planKey: 'paid', limitUnit: ' result/q', unitKey: 'query', pricing: 'https://dehashed.com/pricing', paidOnly: true }
 };
 
 const TYPE_TO_SERVICES = {
@@ -2104,6 +2110,121 @@ const I18N = {
     'config.title.before': 'API Keys ',
     'config.title.gradient': 'Configuration',
     'config.subtitle': 'API keys are encrypted (AES-GCM 256) in localStorage using your Master Key as passphrase. Restored on next login. Without the correct Master Key they cannot be read.',
+    'config.aiDisclaimer.bold': 'AI Analysis disclaimer:',
+    'config.aiDisclaimer.body': ' the "Intelligence Analysis" block sends the raw aggregated data to Anthropic (Claude). Disable the "AI Consent" toggle to opt out.',
+    'config.osintKeys': 'OSINT services keys',
+    'config.intelxTier': 'IntelX Tier',
+    'config.aiSection': 'AI Analysis (Claude)',
+    'config.aiConsent': 'I consent to sending raw aggregated data to Claude (Anthropic) for analysis.',
+    'config.soarTitle': 'External integration (Cortex SOAR)',
+    'config.soarDesc': 'Use the URL below to call the app from Cortex SOAR or other SIEM/SOAR tools. The Master API Key is validated client-side via SHA-256.',
+    'config.soarParams': 'Supported parameters:',
+    'config.masterTitle': 'Master API Key',
+    'config.masterDesc': 'SHA-256 hash of your Master Key (shown for reference; in production hardcoded in the MASTER_KEY_HASH constant).',
+    'persist.eyebrow': 'Persistence',
+    'persist.notSaved': '○ Not saved — will be encrypted on first input',
+    'persist.saved': '● Saved (encrypted)',
+    'persist.storageInfo': 'Storage: ',
+    'persist.encryptedWith': ' · encrypted with PBKDF2(120k) + AES-GCM',
+    'persist.clearBtn': 'Clear stored configuration',
+    'persist.clearConfirm': 'Clear encrypted keys saved in localStorage?\n\nYou will need to re-enter them at next login.',
+    'persist.cleared': 'Encrypted configuration cleared.',
+    'cors.title': 'CORS Proxy (optional but recommended)',
+    'cors.desc.html': 'Most OSINT providers (LeakIX, BreachDirectory, IntelX, DeHashed) <strong>do not allow direct calls from the browser</strong> due to CORS policies. Configure a proxy to forward the requests. Public examples: <code>https://corsproxy.io/?</code>, <code>https://api.allorigins.win/raw?url=</code>. For real use, deploy your own proxy (Cloudflare Worker, Nginx, etc.).',
+    'cors.publicWarn.bold': 'Public proxies limit:',
+    'cors.publicWarn.body': ' services like <code>corsproxy.io</code> often <strong>strip custom headers</strong> (x-key, Authorization, X-RapidAPI-Key) — so APIs that authenticate via these headers fail anyway. <strong>To really use this app, deploy your own Cloudflare Worker</strong> (see below, free in 2 min).',
+    'cors.preview': 'Call URL preview:',
+    'cors.examples.html': 'Accepted examples: <code>https://your-worker.workers.dev/</code> · <code>https://your-worker.workers.dev/?</code> · <code>https://corsproxy.io/?</code>. The trailing <code>?</code> is added automatically.',
+    'cors.preview.disabled': 'proxy disabled — direct call to provider',
+    'cors.testProxy': 'Test Proxy (HIBP diagnostic)',
+    'cors.testProxyHint': 'Verifies the Worker forwards correctly — no API Key needed',
+    'cors.testRunning': 'Testing...',
+    'cors.testNoProxy': 'Set proxy URL first',
+    'cors.testTimeout': 'Timeout after',
+    'cors.testProxyDown': 'The Worker does not respond or the URL is wrong',
+    'cors.testProxyOk': 'Proxy OK',
+    'cors.testProxyBad': 'Proxy returns HTTP',
+    'cors.testProxyBadDetail': 'Worker not configured well',
+    'worker.title': 'Deploy your Cloudflare Worker (recommended)',
+    'worker.step1.html': 'Go to <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">dash.cloudflare.com</a> → <strong>Workers & Pages</strong> → <strong>Create</strong> → <strong>Hello World</strong>.',
+    'worker.step2.html': 'Copy the code below and paste it in the Worker editor, then <strong>Deploy</strong>.',
+    'worker.step3.html': 'Copy the URL Cloudflare gives you (e.g. <code>https://intel-hub-proxy.<i>your-account</i>.workers.dev/?</code>) and paste it in the proxy field above.',
+    'worker.copyBtn': 'Copy Worker code',
+    'worker.copied': "Worker code copied. Paste it in the Cloudflare editor and Deploy.",
+    'worker.intelxWarn.bold': 'IntelX blocked by Cloudflare Workers?',
+    'worker.intelxWarn.body': ' Some OSINT providers (especially <strong>IntelX free tier</strong>) <strong>blacklist cloud IPs</strong>: the Worker sends the request but upstream never responds (timeout). If you see this behavior, deploy the alternative proxy below on <strong>Render.com</strong>, which uses a different IP range.',
+    'render.title': 'Alternative proxy: Node Express on Render.com (if Worker is blocked)',
+    'render.step1.html': 'Go to <a href="https://render.com/" target="_blank" rel="noopener">render.com</a> → register for free (no card).',
+    'render.step2.html': 'New → <strong>Web Service</strong> → <strong>Public Git Repository</strong>.',
+    'render.step3.html': 'Create an empty GitHub repo and add 2 files: <code>server.js</code> (code below) and <code>package.json</code> (with <code>"dependencies": {"express": "^4.18.0", "node-fetch": "^2.7.0"}</code>). Connect it to Render.',
+    'render.step4.html': 'Build command: <code>npm install</code> · Start command: <code>node server.js</code> · Plan: <strong>Free</strong>.',
+    'render.step5.html': 'Once deployed, copy the URL (e.g. <code>https://intel-hub-proxy-xxxx.onrender.com</code>) and paste it in the proxy field above.',
+    'render.copyBtn': 'Copy server.js code',
+    'render.copied': "server.js code copied. Create a GitHub repo and connect it to Render.com.",
+    'limits.col.service': 'Service',
+    'limits.col.plan': 'Plan',
+    'limits.col.limit': 'Limit',
+    'limits.col.used': 'Used (session)',
+    'limits.col.remaining': 'Remaining (est.)',
+    'limits.col.status': 'Status',
+    'limits.col.pricing': 'Pricing',
+    'limits.unlimited': 'Unlimited',
+    'limits.ok': 'OK',
+    'limits.nearLimit': 'Near limit',
+    'limits.exhausted': 'Exhausted',
+    'limits.over': 'su',
+    'svc.plan.free': 'Free',
+    'svc.plan.noauth': 'No-Auth',
+    'svc.plan.rapid': 'Free (RapidAPI)',
+    'svc.plan.researcher': 'Free Researcher',
+    'svc.plan.paid': 'Paid only',
+    'svc.unit.day': '/day',
+    'svc.unit.month': '/month',
+    'svc.unit.account': '/account',
+    'svc.unit.query': ' result/q',
+    'svc.unit.kanon': ' (k-anonymity)',
+    'res.executed': 'Executed:',
+    'res.duration': 'Duration:',
+    'res.type': 'Type:',
+    'res.totalSummary': '{n} total results from {m} active services',
+    'res.copyJson': 'Copy Unified JSON',
+    'res.exportPdf': 'Export PDF Report',
+    'res.rerun': 'Re-run',
+    'res.copyOk': 'Unified JSON copied.',
+    'res.svcCopyOk': 'JSON copied for',
+    'ai.title': 'Intelligence Analysis — generated by Claude',
+    'ai.needKey.html': 'Configure your <strong>Anthropic API Key</strong> in Configuration to enable AI analysis.',
+    'ai.needConsent.html': 'To generate the analysis, give <strong>AI consent</strong> in Configuration (raw data will be sent to Claude).',
+    'ai.error.bold': 'AI Analysis unavailable:',
+    'cors.warnBox.bold': 'CORS warning:',
+    'cors.warnBox.suggest': 'not reachable from the browser. ',
+    'cors.warnBox.haveProxy': 'The configured CORS proxy did not work — make sure it is active.',
+    'cors.warnBox.noProxy.html': 'Go to <a href="#config">Configuration</a> and set up a <strong>CORS Proxy</strong> to forward the requests.',
+    'acc.results': 'results',
+    'acc.notConfigured': 'Not configured',
+    'acc.error': 'Error:',
+    'acc.copyJsonBtn': 'JSON',
+    'acc.noResults': 'No results.',
+    'acc.noStructured': 'No structured results.',
+    'col.source': 'Source',
+    'col.name': 'Name',
+    'col.preview': 'Preview',
+    'col.date': 'Date',
+    'col.dateFound': 'Date found',
+    'col.email': 'Email',
+    'col.password': 'Password',
+    'col.sha1': 'SHA1',
+    'col.sources': 'Sources',
+    'col.plugin': 'Plugin',
+    'col.host': 'Host',
+    'col.severity': 'Severity',
+    'col.username': 'Username',
+    'col.db': 'Database',
+    'col.status': 'Status',
+    'col.message': 'Message',
+    'col.compromised': 'Compromised',
+    'col.safe': 'Safe',
+    'col.unknown': 'unknown',
     'lang.it': 'Italiano',
     'lang.en': 'English'
   },
@@ -2179,6 +2300,121 @@ const I18N = {
     'config.title.before': 'Configurazione ',
     'config.title.gradient': 'API Keys',
     'config.subtitle': 'Le chiavi sono cifrate (AES-GCM 256) in localStorage usando la tua Master Key come passphrase. Si ripristinano al login successivo. Senza la Master Key corretta non sono leggibili.',
+    'config.aiDisclaimer.bold': 'Disclaimer AI Analysis:',
+    'config.aiDisclaimer.body': ' il blocco "Analisi Intelligence" invia i dati grezzi aggregati ad Anthropic (Claude). Disabilita il toggle "Consenso AI" per evitarlo.',
+    'config.osintKeys': 'Chiavi servizi OSINT',
+    'config.intelxTier': 'IntelX Tier',
+    'config.aiSection': 'AI Analysis (Claude)',
+    'config.aiConsent': "Acconsento all'invio dei dati grezzi aggregati a Claude (Anthropic) per l'analisi.",
+    'config.soarTitle': 'Integrazione esterna (Cortex SOAR)',
+    'config.soarDesc': "Usa la URL seguente per richiamare l'app da Cortex SOAR o altri strumenti SIEM/SOAR. La Master API Key viene validata client-side via SHA-256.",
+    'config.soarParams': 'Parametri supportati:',
+    'config.masterTitle': 'Master API Key',
+    'config.masterDesc': 'Hash SHA-256 della tua Master Key (visualizzato solo per riferimento; in produzione hardcoded nella costante MASTER_KEY_HASH).',
+    'persist.eyebrow': 'Persistence',
+    'persist.notSaved': '○ Non salvato — verrà cifrato al primo input',
+    'persist.saved': '● Salvato (cifrato)',
+    'persist.storageInfo': 'Storage: ',
+    'persist.encryptedWith': ' · cifrato con PBKDF2(120k) + AES-GCM',
+    'persist.clearBtn': 'Cancella configurazione salvata',
+    'persist.clearConfirm': 'Cancellare le chiavi cifrate salvate in localStorage?\n\nDovrai re-immetterle al prossimo login.',
+    'persist.cleared': 'Configurazione cifrata cancellata.',
+    'cors.title': 'CORS Proxy (opzionale ma consigliato)',
+    'cors.desc.html': 'La maggior parte dei provider OSINT (LeakIX, BreachDirectory, IntelX, DeHashed) <strong>non consente chiamate dirette dal browser</strong> per via delle policy CORS. Configura un proxy per inoltrare le richieste. Esempi pubblici: <code>https://corsproxy.io/?</code>, <code>https://api.allorigins.win/raw?url=</code>. Per uso reale, deploya un proxy tuo (Cloudflare Worker, Nginx, etc.).',
+    'cors.publicWarn.bold': 'Limite proxy pubblici:',
+    'cors.publicWarn.body': ' servizi come <code>corsproxy.io</code> spesso <strong>strippano gli header custom</strong> (x-key, Authorization, X-RapidAPI-Key) — quindi le API che usano questi header per autenticarsi falliscono comunque. <strong>Per usare davvero questa app deploya il tuo Cloudflare Worker</strong> (vedi sotto, 2 minuti gratis).',
+    'cors.preview': 'Anteprima URL chiamata:',
+    'cors.examples.html': 'Esempi accettati: <code>https://tuo-worker.workers.dev/</code> · <code>https://tuo-worker.workers.dev/?</code> · <code>https://corsproxy.io/?</code>. Il <code>?</code> finale viene aggiunto automaticamente.',
+    'cors.preview.disabled': 'proxy disattivato — chiamata diretta al provider',
+    'cors.testProxy': 'Test Proxy (diagnostico via HIBP)',
+    'cors.testProxyHint': 'Verifica che il Worker inoltri correttamente — non richiede API Key',
+    'cors.testRunning': 'Test in corso...',
+    'cors.testNoProxy': 'Imposta prima la URL del proxy',
+    'cors.testTimeout': 'Timeout dopo',
+    'cors.testProxyDown': 'il Worker non risponde o la URL è sbagliata',
+    'cors.testProxyOk': 'Proxy OK',
+    'cors.testProxyBad': 'Proxy risponde HTTP',
+    'cors.testProxyBadDetail': 'Worker non configurato bene',
+    'worker.title': 'Deploy del tuo Cloudflare Worker (consigliato)',
+    'worker.step1.html': 'Vai su <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">dash.cloudflare.com</a> → <strong>Workers & Pages</strong> → <strong>Create</strong> → <strong>Hello World</strong>.',
+    'worker.step2.html': "Copia il codice qui sotto e incollalo nell'editor del Worker, poi <strong>Deploy</strong>.",
+    'worker.step3.html': 'Copia la URL che Cloudflare ti dà (es. <code>https://intel-hub-proxy.<i>tuo-account</i>.workers.dev/?</code>) e incollala nel campo proxy qui sopra.',
+    'worker.copyBtn': 'Copia codice Worker',
+    'worker.copied': "Codice Worker copiato. Incollalo nell'editor Cloudflare e fai Deploy.",
+    'worker.intelxWarn.bold': 'IntelX bloccato dai Cloudflare Workers?',
+    'worker.intelxWarn.body': ' Alcuni provider OSINT (in particolare <strong>IntelX free tier</strong>) <strong>blackistano gli IP cloud</strong>: il Worker invia la richiesta ma upstream non risponde mai (timeout). Se vedi questo comportamento, deploya il proxy alternativo qui sotto su <strong>Render.com</strong>, che usa un range IP diverso.',
+    'render.title': 'Proxy alternativo: Node Express su Render.com (se il Worker viene bloccato)',
+    'render.step1.html': 'Vai su <a href="https://render.com/" target="_blank" rel="noopener">render.com</a> → registrati gratis (no carta).',
+    'render.step2.html': 'New → <strong>Web Service</strong> → <strong>Public Git Repository</strong>.',
+    'render.step3.html': 'Crea una repo GitHub vuota e mettici 2 file: <code>server.js</code> (codice qui sotto) e <code>package.json</code> (con <code>"dependencies": {"express": "^4.18.0", "node-fetch": "^2.7.0"}</code>). Connettila a Render.',
+    'render.step4.html': 'Build command: <code>npm install</code> · Start command: <code>node server.js</code> · Plan: <strong>Free</strong>.',
+    'render.step5.html': 'Una volta deployato, copia la URL (es. <code>https://intel-hub-proxy-xxxx.onrender.com</code>) e incollala nel campo proxy qui sopra.',
+    'render.copyBtn': 'Copia codice server.js',
+    'render.copied': 'Codice server.js copiato. Crea repo GitHub e collegala a Render.com.',
+    'limits.col.service': 'Servizio',
+    'limits.col.plan': 'Piano',
+    'limits.col.limit': 'Limite',
+    'limits.col.used': 'Usato (sessione)',
+    'limits.col.remaining': 'Residuo stimato',
+    'limits.col.status': 'Stato',
+    'limits.col.pricing': 'Pricing',
+    'limits.unlimited': 'Illimitato',
+    'limits.ok': 'OK',
+    'limits.nearLimit': 'Vicino al limite',
+    'limits.exhausted': 'Esaurito',
+    'limits.over': 'su',
+    'svc.plan.free': 'Free',
+    'svc.plan.noauth': 'No-Auth',
+    'svc.plan.rapid': 'Free (RapidAPI)',
+    'svc.plan.researcher': 'Free Researcher',
+    'svc.plan.paid': 'Paid only',
+    'svc.unit.day': '/giorno',
+    'svc.unit.month': '/mese',
+    'svc.unit.account': '/account',
+    'svc.unit.query': ' result/q',
+    'svc.unit.kanon': ' (k-anonymity)',
+    'res.executed': 'Eseguita:',
+    'res.duration': 'Durata:',
+    'res.type': 'Tipo:',
+    'res.totalSummary': '{n} risultati totali da {m} servizi attivi',
+    'res.copyJson': 'Copia JSON Unificato',
+    'res.exportPdf': 'Esporta Report PDF',
+    'res.rerun': 'Riesegui',
+    'res.copyOk': 'JSON unificato copiato.',
+    'res.svcCopyOk': 'JSON copiato per',
+    'ai.title': 'Analisi Intelligence — generata da Claude',
+    'ai.needKey.html': "Configura la <strong>Anthropic API Key</strong> in Configurazione per abilitare l'analisi AI.",
+    'ai.needConsent.html': "Per generare l'analisi, fornisci il <strong>consenso AI</strong> in Configurazione (i dati grezzi verranno inviati a Claude).",
+    'ai.error.bold': 'AI Analysis non disponibile:',
+    'cors.warnBox.bold': 'Avviso CORS:',
+    'cors.warnBox.suggest': 'non raggiungibili dal browser. ',
+    'cors.warnBox.haveProxy': 'Il CORS proxy configurato non ha funzionato — controlla che sia attivo.',
+    'cors.warnBox.noProxy.html': 'Vai in <a href="#config">Configurazione</a> e imposta un <strong>CORS Proxy</strong> per inoltrare le richieste.',
+    'acc.results': 'risultati',
+    'acc.notConfigured': 'Non configurato',
+    'acc.error': 'Errore:',
+    'acc.copyJsonBtn': 'JSON',
+    'acc.noResults': 'Nessun risultato.',
+    'acc.noStructured': 'Nessun risultato strutturato.',
+    'col.source': 'Source',
+    'col.name': 'Nome',
+    'col.preview': 'Preview',
+    'col.date': 'Data',
+    'col.dateFound': 'Data ritrovamento',
+    'col.email': 'Email',
+    'col.password': 'Password',
+    'col.sha1': 'SHA1',
+    'col.sources': 'Sources',
+    'col.plugin': 'Plugin',
+    'col.host': 'Host',
+    'col.severity': 'Severity',
+    'col.username': 'Username',
+    'col.db': 'Database',
+    'col.status': 'Stato',
+    'col.message': 'Messaggio',
+    'col.compromised': 'Compromessa',
+    'col.safe': 'Sicura',
+    'col.unknown': 'sconosciuto',
     'lang.it': 'Italiano',
     'lang.en': 'English'
   }
@@ -2212,6 +2448,10 @@ function setLang(lang) {
     if ($('#serviceChecks')) renderServiceChecks();
     const route = location.hash.slice(1) || 'search';
     $('#routeTitle').textContent = t('topbar.' + route);
+    // Re-render section attiva
+    if (route === 'limits') renderLimits();
+    if (route === 'config') updatePersistStatus();
+    if (route === 'results' && state.lastResults) renderResults(state.lastResults);
     // Avatar idle msg
     const stage = document.getElementById('avatarStage');
     if (stage && stage.dataset.state === 'idle') {
@@ -2313,11 +2553,12 @@ function clearPersistedConfig() {
 function updatePersistStatus() {
   const el = document.getElementById('persistStatus');
   if (!el) return;
+  const locale = currentLang === 'it' ? 'it-IT' : 'en-US';
   if (state.lastSavedAt) {
     const d = new Date(state.lastSavedAt);
-    el.innerHTML = `<span style="color: var(--success);">●</span> Salvato (cifrato) · ${d.toLocaleTimeString('it-IT')}`;
+    el.innerHTML = `<span style="color: var(--success);">●</span> ${t('persist.saved').replace('● ','')} · ${d.toLocaleTimeString(locale)}`;
   } else {
-    el.innerHTML = `<span style="color: var(--text-3);">○</span> Non salvato — verrà cifrato al primo input`;
+    el.innerHTML = `<span style="color: var(--text-3);">○</span> ${t('persist.notSaved').replace('○ ','')}`;
   }
 }
 
@@ -2512,24 +2753,49 @@ async function callClaude(kw, type, results) {
   if (!key) return { error: 'Anthropic API Key non configurata.' };
   if (!state.aiConsent) return { error: 'Consenso AI non fornito. Abilita il toggle in Configurazione.' };
 
-  const systemPrompt = `Sei un analista di Cyber Threat Intelligence specializzato in Identity Intelligence.
+  const SYSTEM_PROMPTS = {
+    it: `Sei un analista di Cyber Threat Intelligence specializzato in Identity Intelligence.
 Ricevi dati grezzi aggregati da più piattaforme OSINT (IntelX, HIBP, BreachDirectory, LeakIX, DeHashed).
 Il tuo compito è:
-1. Sintetizzare i risultati in un report professionale in italiano
+1. Sintetizzare i risultati in un report professionale **in italiano**
 2. Identificare i pattern più rilevanti (quali breach, quante volte esposto, su quali piattaforme)
-3. Valutare il livello di rischio: BASSO / MEDIO / ALTO / CRITICO con motivazione
-4. Fornire raccomandazioni operative immediate
-5. Evidenziare eventuali correlazioni tra i risultati dei diversi servizi
-Formato output: markdown strutturato con sezioni chiare.`;
+3. Per ogni finding, **evidenziare la data di occorrenza del breach o del ritrovamento sul Dark Web** se presente nei dati grezzi: è un'informazione critica per valutare la rilevanza
+4. Valutare il livello di rischio: BASSO / MEDIO / ALTO / CRITICO con motivazione, considerando anche la freschezza dei dati
+5. Fornire raccomandazioni operative immediate
+6. Evidenziare eventuali correlazioni tra i risultati dei diversi servizi
+Formato output: markdown strutturato con sezioni chiare. **Tutto il report deve essere in italiano.**`,
+    en: `You are a Cyber Threat Intelligence analyst specializing in Identity Intelligence.
+You receive raw aggregated data from multiple OSINT platforms (IntelX, HIBP, BreachDirectory, LeakIX, DeHashed).
+Your task is to:
+1. Synthesize the results into a professional report **in English**
+2. Identify the most relevant patterns (which breaches, how many times exposed, on which platforms)
+3. For each finding, **highlight the breach occurrence date or Dark Web discovery date** if present in the raw data: this is critical information to assess relevance
+4. Assess the risk level: LOW / MEDIUM / HIGH / CRITICAL with reasoning, also considering data freshness
+5. Provide immediate operational recommendations
+6. Highlight any correlations between results from different services
+Output format: structured markdown with clear sections. **The entire report must be in English.**`
+  };
+  const systemPrompt = SYSTEM_PROMPTS[currentLang] || SYSTEM_PROMPTS.en;
 
-  const userMsg = `Keyword analizzata: "${kw}" (tipo: ${type})
+  const USER_PROMPTS = {
+    it: `Keyword analizzata: "${kw}" (tipo: ${type})
 
 Dati grezzi aggregati:
 \`\`\`json
 ${JSON.stringify(results, null, 2)}
 \`\`\`
 
-Genera il report Identity Intelligence completo.`;
+Genera il report Identity Intelligence completo. Ricorda: per ogni risultato menzionato esplicitamente cita la data di occorrenza/ritrovamento (es. "Breach del 2023-08-14, ritrovato il...") quando disponibile.`,
+    en: `Analyzed keyword: "${kw}" (type: ${type})
+
+Raw aggregated data:
+\`\`\`json
+${JSON.stringify(results, null, 2)}
+\`\`\`
+
+Generate the complete Identity Intelligence report. Remember: for every cited result, explicitly mention the occurrence/discovery date (e.g. "Breach from 2023-08-14, discovered on...") when available.`
+  };
+  const userMsg = USER_PROMPTS[currentLang] || USER_PROMPTS.en;
 
   try {
     const res = await fetchTimeout('https://api.anthropic.com/v1/messages', {
@@ -2629,13 +2895,15 @@ function renderServiceStatusGrid() {
     else { pill = t('connectors.pill.notset'); pillClass = 'pill-warn'; }
     const card = document.createElement('div');
     card.className = 'svc-status-card';
+    const planLabel = t('svc.plan.' + (svc.planKey || 'free'));
+    const unitLabel = t('svc.unit.' + (svc.unitKey || 'day'));
     card.innerHTML = `
       <div class="svc-status-orb" style="background: ${svc.color}; color: ${svc.color};">
         <i data-lucide="${{intelx:'database',hibp:'lock',breachdirectory:'unlock',leakix:'globe',dehashed:'key'}[id] || 'circle'}"></i>
       </div>
       <div class="svc-status-meta">
         <div class="svc-status-name">${svc.name}</div>
-        <div class="svc-status-info">${svc.plan} · ${svc.limit === Infinity ? '∞' : svc.limit}${svc.limitUnit}</div>
+        <div class="svc-status-info">${planLabel} · ${svc.limit === Infinity ? '∞' : svc.limit}${unitLabel}</div>
       </div>
       <span class="svc-status-pill ${pillClass}">${pill}</span>
     `;
@@ -2716,15 +2984,16 @@ function renderResults(payload) {
   const okServices = results.filter(r => r.status === 'success').length;
 
   const corsWarnings = results.filter(r => r.cors);
-  const corsBox = corsWarnings.length ? `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>Avviso CORS:</strong> ${corsWarnings.map(c => SERVICES[c.service].name).join(', ')} non raggiungibili dal browser. ${state.corsProxy ? 'Il CORS proxy configurato non ha funzionato — controlla che sia attivo.' : 'Vai in <a href="#config">Configurazione</a> e imposta un <strong>CORS Proxy</strong> per inoltrare le richieste.'}</div></div>` : '';
+  const corsBox = corsWarnings.length ? `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>${t('cors.warnBox.bold')}</strong> ${corsWarnings.map(c => SERVICES[c.service].name).join(', ')} ${t('cors.warnBox.suggest')}${state.corsProxy ? t('cors.warnBox.haveProxy') : t('cors.warnBox.noProxy.html')}</div></div>` : '';
 
+  const locale = currentLang === 'it' ? 'it-IT' : 'en-US';
   c.innerHTML = `
     <div class="card">
       <div class="summary-header">
         <div>
           <h2>${escapeHtml(kw)}</h2>
-          <div class="meta">Tipo: <strong>${type}</strong> · Eseguita: ${new Date(timestamp).toLocaleString('it-IT')} · Durata: ${elapsed}s</div>
-          <div class="meta" style="margin-top:4px;"><strong>${totalCount}</strong> risultati totali da <strong>${okServices}</strong> servizi attivi</div>
+          <div class="meta">${t('res.type')} <strong>${type}</strong> · ${t('res.executed')} ${new Date(timestamp).toLocaleString(locale)} · ${t('res.duration')} ${elapsed}s</div>
+          <div class="meta" style="margin-top:4px;">${t('res.totalSummary').replace('{n}', `<strong>${totalCount}</strong>`).replace('{m}', `<strong>${okServices}</strong>`)}</div>
         </div>
         <div class="svc-badges">
           ${results.map(r => {
@@ -2737,14 +3006,14 @@ function renderResults(payload) {
       </div>
       ${corsBox}
       <div class="row-flex no-print">
-        <button class="btn btn-ghost btn-sm" id="copyJsonBtn"><i data-lucide="copy"></i> Copia JSON Unificato</button>
-        <button class="btn btn-ghost btn-sm" id="exportPdfBtn"><i data-lucide="printer"></i> Esporta Report PDF</button>
-        <button class="btn btn-ghost btn-sm" id="rerunBtn"><i data-lucide="refresh-cw"></i> Riesegui</button>
+        <button class="btn btn-ghost btn-sm" id="copyJsonBtn"><i data-lucide="copy"></i> ${t('res.copyJson')}</button>
+        <button class="btn btn-ghost btn-sm" id="exportPdfBtn"><i data-lucide="printer"></i> ${t('res.exportPdf')}</button>
+        <button class="btn btn-ghost btn-sm" id="rerunBtn"><i data-lucide="refresh-cw"></i> ${t('res.rerun')}</button>
       </div>
     </div>
 
     <div class="ai-block" id="aiBlock">
-      <h2><i data-lucide="sparkles"></i> Analisi Intelligence — generata da Claude</h2>
+      <h2><i data-lucide="sparkles"></i> ${t('ai.title')}</h2>
       <div class="ai-content" id="aiContent">
         <div class="sk-line skeleton w-80"></div>
         <div class="sk-line skeleton w-60"></div>
@@ -2764,21 +3033,25 @@ function renderResults(payload) {
     acc.className = 'accordion' + (idx === 0 ? ' open' : '');
     let body = '';
     if (r.status === 'not-configured') {
-      body = `<p class="muted">${escapeHtml(r.error || 'Non configurato')}</p>`;
+      body = `<p class="muted">${escapeHtml(r.error || t('acc.notConfigured'))}</p>`;
     } else if (r.status === 'error') {
-      body = `<div class="warning-box"><i data-lucide="alert-circle" class="icon"></i><div><strong>Errore:</strong> ${escapeHtml(r.error)}</div></div>`;
+      body = `<div class="warning-box"><i data-lucide="alert-circle" class="icon"></i><div><strong>${t('acc.error')}</strong> ${escapeHtml(r.error)}</div></div>`;
     } else {
       body = renderServiceData(r);
     }
+    // Trova la data più recente nei risultati per mostrarla nell'header
+    const freshness = computeFreshness(r);
+    const freshnessHtml = freshness ? `<span class="badge neutral" title="${freshness.label}" style="font-family:'JetBrains Mono',monospace;font-size:0.66rem;"><i data-lucide="clock" style="width:10px;height:10px;"></i> ${freshness.text}</span>` : '';
     acc.innerHTML = `
       <div class="accordion-head">
         <div class="left">
           <span class="svc-dot" style="background:${svc.color};width:12px;height:12px;"></span>
           <strong>${svc.name}</strong>
-          <span class="badge ${r.status === 'success' && (r.count||0)>0 ? 'success' : (r.status === 'success' ? 'neutral' : 'danger')}">${r.status === 'success' ? `${r.count || 0} risultati` : r.status}</span>
+          <span class="badge ${r.status === 'success' && (r.count||0)>0 ? 'success' : (r.status === 'success' ? 'neutral' : 'danger')}">${r.status === 'success' ? `${r.count || 0} ${t('acc.results')}` : r.status}</span>
+          ${freshnessHtml}
         </div>
         <div class="row-flex">
-          <button class="btn btn-ghost btn-sm copy-svc-btn" data-svc="${r.service}"><i data-lucide="copy"></i> JSON</button>
+          <button class="btn btn-ghost btn-sm copy-svc-btn" data-svc="${r.service}"><i data-lucide="copy"></i> ${t('acc.copyJsonBtn')}</button>
           <i data-lucide="chevron-down" class="chev"></i>
         </div>
       </div>
@@ -2796,12 +3069,12 @@ function renderResults(payload) {
     const svc = b.dataset.svc;
     const r = results.find(x => x.service === svc);
     navigator.clipboard.writeText(JSON.stringify(r, null, 2));
-    toast(`JSON ${SERVICES[svc].name} copiato.`, 'success');
+    toast(`${t('res.svcCopyOk')} ${SERVICES[svc].name}.`, 'success');
   });
   $('#copyJsonBtn').onclick = async () => {
     const unified = { ...payload, aiAnalysis: state.lastResults?.aiAnalysis || null };
     await navigator.clipboard.writeText(JSON.stringify(unified, null, 2));
-    toast('JSON unificato copiato.', 'success');
+    toast(t('res.copyOk'), 'success');
   };
   $('#exportPdfBtn').onclick = () => window.print();
   $('#rerunBtn').onclick = () => { location.hash = '#search'; };
@@ -2812,72 +3085,116 @@ function renderResults(payload) {
   loadAIAnalysis(kw, type, results);
 }
 
+// Estrae la data più recente dai dati grezzi del connettore + un'etichetta human-readable
+function computeFreshness(r) {
+  const dates = collectDates(r);
+  if (!dates.length) return null;
+  dates.sort((a, b) => b.ts - a.ts);
+  const newest = dates[0];
+  const days = Math.floor((Date.now() - newest.ts) / (1000 * 60 * 60 * 24));
+  let txt;
+  if (days < 1) txt = currentLang === 'it' ? 'oggi' : 'today';
+  else if (days < 7) txt = currentLang === 'it' ? `${days}g fa` : `${days}d ago`;
+  else if (days < 30) txt = currentLang === 'it' ? `${Math.floor(days/7)}sett fa` : `${Math.floor(days/7)}w ago`;
+  else if (days < 365) txt = currentLang === 'it' ? `${Math.floor(days/30)}m fa` : `${Math.floor(days/30)}mo ago`;
+  else txt = currentLang === 'it' ? `${Math.floor(days/365)}a fa` : `${Math.floor(days/365)}y ago`;
+  return { text: txt, label: `${currentLang === 'it' ? 'Più recente' : 'Newest'}: ${newest.iso}` };
+}
+function collectDates(r) {
+  const out = [];
+  const tryDate = (raw) => {
+    if (!raw) return;
+    const ts = Date.parse(raw);
+    if (!isNaN(ts) && ts > Date.parse('2000-01-01') && ts < Date.now() + 86400000) {
+      out.push({ ts, iso: new Date(ts).toISOString().slice(0, 10), raw });
+    }
+  };
+  if (r.service === 'intelx' && r.data?.results) r.data.results.forEach(x => tryDate(x.date));
+  if (r.service === 'leakix' && r.data?.items) r.data.items.forEach(x => tryDate(x.time || x.created_at || x.last_seen));
+  if (r.service === 'dehashed' && r.data?.entries) r.data.entries.forEach(x => tryDate(x.obtained_from || x.added_date || x.last_breach));
+  if (r.service === 'breachdirectory' && r.data?.result) r.data.result.forEach(x => tryDate(x.date || x.last_breach));
+  return out;
+}
+// Estrae singola data per riga, restituendo string formattata o '—'
+function fmtDate(raw) {
+  if (!raw) return '—';
+  const ts = Date.parse(raw);
+  if (isNaN(ts)) return escapeHtml(String(raw));
+  const d = new Date(ts);
+  const locale = currentLang === 'it' ? 'it-IT' : 'en-US';
+  return `<span class="date-cell" title="${d.toISOString()}">${d.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: '2-digit' })}</span>`;
+}
+
 function renderServiceData(r) {
   const svc = r.service;
   if (svc === 'hibp' && r.data) {
     const found = r.data.found;
-    return `<div class="result-row"><span class="key">Stato</span><span class="val">${found ? `<span class="badge danger">Compromessa</span>` : `<span class="badge success">Sicura</span>`}</span></div>
-    <div class="result-row"><span class="key">Messaggio</span><span class="val">${escapeHtml(r.data.message)}</span></div>`;
+    return `<div class="result-row"><span class="key">${t('col.status')}</span><span class="val">${found ? `<span class="badge danger">${t('col.compromised')}</span>` : `<span class="badge success">${t('col.safe')}</span>`}</span></div>
+    <div class="result-row"><span class="key">${t('col.message')}</span><span class="val">${escapeHtml(r.data.message)}</span></div>`;
   }
   if (svc === 'intelx' && r.data?.results?.length) {
-    const rows = r.data.results.map(x => `
+    // Sort by date desc
+    const sorted = [...r.data.results].sort((a,b) => (Date.parse(b.date)||0) - (Date.parse(a.date)||0));
+    const rows = sorted.map(x => `
       <tr>
+        <td class="td-date">${fmtDate(x.date)}</td>
         <td>${escapeHtml(x.source || '—')}</td>
         <td>${escapeHtml(x.name || '—')}</td>
         <td>${escapeHtml(x.preview || '—')}</td>
-        <td>${escapeHtml(x.date || '—')}</td>
       </tr>`).join('');
-    return `<table class="table"><thead><tr><th>Source</th><th>Nome</th><th>Preview</th><th>Data</th></tr></thead><tbody>${rows}</tbody></table>`;
+    return `<table class="table"><thead><tr><th>${t('col.dateFound')}</th><th>${t('col.source')}</th><th>${t('col.name')}</th><th>${t('col.preview')}</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
   if (svc === 'breachdirectory' && r.data) {
-    if (!r.data.found || !(r.data.result||[]).length) return `<p class="muted">Nessun risultato.</p>`;
+    if (!r.data.found || !(r.data.result||[]).length) return `<p class="muted">${t('acc.noResults')}</p>`;
     const rows = r.data.result.map(x => `
       <tr>
+        <td class="td-date">${fmtDate(x.date || x.last_breach)}</td>
         <td>${escapeHtml(x.email || '—')}</td>
         <td>${escapeHtml(x.password || '—')}</td>
-        <td>${escapeHtml(x.sha1 || '—')}</td>
         <td>${escapeHtml(x.sources || '—')}</td>
       </tr>`).join('');
-    return `<table class="table"><thead><tr><th>Email</th><th>Password</th><th>SHA1</th><th>Sources</th></tr></thead><tbody>${rows}</tbody></table>`;
+    return `<p class="muted" style="margin-bottom:8px;font-size:0.8rem;">${currentLang === 'it' ? 'Nota: BreachDirectory spesso non espone la data del singolo breach. Controlla la colonna Sources per il nome del database.' : 'Note: BreachDirectory often does not expose per-breach dates. Check the Sources column for the database name.'}</p><table class="table"><thead><tr><th>${t('col.dateFound')}</th><th>${t('col.email')}</th><th>${t('col.password')}</th><th>${t('col.sources')}</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
   if (svc === 'leakix' && r.data?.items?.length) {
-    const rows = r.data.items.map(x => `
+    const sorted = [...r.data.items].sort((a,b) => (Date.parse(b.time||b.created_at||0)||0) - (Date.parse(a.time||a.created_at||0)||0));
+    const rows = sorted.map(x => `
       <tr>
+        <td class="td-date">${fmtDate(x.time || x.created_at || x.last_seen)}</td>
         <td>${escapeHtml(x.event_source || x.plugin || '—')}</td>
         <td>${escapeHtml(x.host || x.ip || '—')}</td>
         <td>${escapeHtml(x.severity || x.event_type || '—')}</td>
-        <td>${escapeHtml(x.time || x.created_at || '—')}</td>
       </tr>`).join('');
-    return `<table class="table"><thead><tr><th>Plugin</th><th>Host</th><th>Severity</th><th>Data</th></tr></thead><tbody>${rows}</tbody></table>`;
+    return `<table class="table"><thead><tr><th>${t('col.dateFound')}</th><th>${t('col.plugin')}</th><th>${t('col.host')}</th><th>${t('col.severity')}</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
   if (svc === 'dehashed' && r.data?.entries?.length) {
     const rows = r.data.entries.map(x => `
       <tr>
+        <td class="td-date">${fmtDate(x.obtained_from || x.added_date || x.last_breach)}</td>
         <td>${escapeHtml(x.email || '—')}</td>
         <td>${escapeHtml(x.username || '—')}</td>
         <td>${escapeHtml(x.password || x.hashed_password || '—')}</td>
         <td>${escapeHtml(x.database_name || '—')}</td>
       </tr>`).join('');
-    return `<table class="table"><thead><tr><th>Email</th><th>Username</th><th>Password</th><th>DB</th></tr></thead><tbody>${rows}</tbody></table>`;
+    return `<table class="table"><thead><tr><th>${t('col.dateFound')}</th><th>${t('col.email')}</th><th>${t('col.username')}</th><th>${t('col.password')}</th><th>${t('col.db')}</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
-  return `<p class="muted">Nessun risultato strutturato.</p><pre style="background:var(--bg-2);padding:12px;border-radius:6px;overflow:auto;max-height:240px;font-size:0.78rem;">${escapeHtml(JSON.stringify(r.data, null, 2))}</pre>`;
+  return `<p class="muted">${t('acc.noStructured')}</p><pre style="background:var(--bg-2);padding:12px;border-radius:6px;overflow:auto;max-height:240px;font-size:0.78rem;">${escapeHtml(JSON.stringify(r.data, null, 2))}</pre>`;
 }
 
 async function loadAIAnalysis(kw, type, results) {
   const c = $('#aiContent');
   if (!state.apiKeys.anthropic) {
-    c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>Configura la <strong>Anthropic API Key</strong> in Configurazione per abilitare l'analisi AI.</div></div>`;
+    c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>${t('ai.needKey.html')}</div></div>`;
     lucide.createIcons();
     return;
   }
   if (!state.aiConsent) {
-    c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>Per generare l'analisi, fornisci il <strong>consenso AI</strong> in Configurazione (i dati grezzi verranno inviati a Claude).</div></div>`;
+    c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>${t('ai.needConsent.html')}</div></div>`;
     lucide.createIcons();
     return;
   }
   const out = await callClaude(kw, type, results);
   if (out.error) {
-    c.innerHTML = `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>AI Analysis non disponibile:</strong> ${escapeHtml(out.error)}</div></div>`;
+    c.innerHTML = `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>${t('ai.error.bold')}</strong> ${escapeHtml(out.error)}</div></div>`;
     lucide.createIcons();
     return;
   }
@@ -2889,34 +3206,48 @@ async function loadAIAnalysis(kw, type, results) {
 function renderLimits() {
   const grid = $('#kpiGrid');
   const tbody = $('#limitsTableBody');
+  if (!grid || !tbody) return;
   grid.innerHTML = '';
+  // Header
+  const thead = tbody.parentElement.querySelector('thead');
+  if (thead) thead.innerHTML = `<tr>
+    <th>${t('limits.col.service')}</th>
+    <th>${t('limits.col.plan')}</th>
+    <th>${t('limits.col.limit')}</th>
+    <th>${t('limits.col.used')}</th>
+    <th>${t('limits.col.remaining')}</th>
+    <th>${t('limits.col.status')}</th>
+    <th>${t('limits.col.pricing')}</th>
+  </tr>`;
   tbody.innerHTML = '';
   Object.entries(SERVICES).forEach(([id, svc]) => {
     const used = state.rateUsage[id] || 0;
     const limit = svc.limit;
     const remaining = limit === Infinity ? '∞' : Math.max(0, limit - used);
     const pct = limit === Infinity ? 0 : (used / limit) * 100;
-    let stato = '🟢 OK';
-    if (limit === Infinity) stato = '🟢 Illimitato';
-    else if (pct >= 100) stato = '🔴 Esaurito';
-    else if (pct >= 80) stato = '🟡 Vicino al limite';
+    let stato = '🟢 ' + t('limits.ok');
+    if (limit === Infinity) stato = '🟢 ' + t('limits.unlimited');
+    else if (pct >= 100) stato = '🔴 ' + t('limits.exhausted');
+    else if (pct >= 80) stato = '🟡 ' + t('limits.nearLimit');
 
-    // KPI
+    const planLabel = t('svc.plan.' + (svc.planKey || 'free'));
+    const unitLabel = t('svc.unit.' + (svc.unitKey || 'day'));
+    const limitTxt = limit === Infinity ? '∞' : limit;
+
     const kpi = document.createElement('div');
     kpi.className = 'kpi';
     kpi.innerHTML = `
       <div class="label" style="display:flex;align-items:center;gap:6px;"><span class="svc-dot" style="background:${svc.color}"></span>${svc.name}</div>
       <div class="value" data-target="${used}">0</div>
-      <div class="delta">su ${limit === Infinity ? '∞' : limit}${svc.limitUnit}</div>
+      <div class="delta">${t('limits.over')} ${limitTxt}${unitLabel}</div>
     `;
     grid.appendChild(kpi);
 
-    // Row
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${svc.name}</strong></td>
-      <td>${svc.plan}</td>
-      <td>${limit === Infinity ? '∞' : limit}${svc.limitUnit}</td>
+      <td>${planLabel}</td>
+      <td>${limitTxt}${unitLabel}</td>
       <td>${used}</td>
       <td>${remaining}</td>
       <td>${stato}</td>
@@ -3025,38 +3356,37 @@ function renderConfigForm() {
   const copyWorkerBtn = $('#copyWorker');
   if (copyWorkerBtn) copyWorkerBtn.onclick = () => {
     navigator.clipboard.writeText($('#workerCode').textContent);
-    toast('Codice Worker copiato. Incollalo nell\'editor Cloudflare e fai Deploy.', 'success');
+    toast(t('worker.copied'), 'success');
   };
   const copyExpressBtn = $('#copyExpress');
   if (copyExpressBtn) copyExpressBtn.onclick = () => {
     navigator.clipboard.writeText($('#expressCode').textContent);
-    toast('Codice server.js copiato. Crea repo GitHub e collegala a Render.com.', 'success');
+    toast(t('render.copied'), 'success');
   };
 
   const testProxyBtn = $('#testProxyBtn');
   const testProxyRes = $('#testProxyResult');
   if (testProxyBtn) testProxyBtn.onclick = async () => {
-    if (!state.corsProxy) { testProxyRes.innerHTML = '<span style="color:var(--warning);">Imposta prima la URL del proxy</span>'; return; }
-    testProxyRes.innerHTML = '<span class="spinner" style="display:inline-block;width:12px;height:12px;"></span> Test in corso...';
+    if (!state.corsProxy) { testProxyRes.innerHTML = `<span style="color:var(--warning);">${t('cors.testNoProxy')}</span>`; return; }
+    testProxyRes.innerHTML = `<span class="spinner" style="display:inline-block;width:12px;height:12px;"></span> ${t('cors.testRunning')}`;
     const t0 = performance.now();
     try {
-      // HIBP non richiede auth, è veloce e ritorna sempre dati
       const r = await fetchTimeout(proxied('https://api.pwnedpasswords.com/range/AAAAA'), {}, 20000);
       const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
       if (!r.ok) {
-        testProxyRes.innerHTML = `<span style="color:var(--danger);">Proxy risponde HTTP ${r.status} dopo ${elapsed}s — Worker non configurato bene</span>`;
+        testProxyRes.innerHTML = `<span style="color:var(--danger);">${t('cors.testProxyBad')} ${r.status} · ${elapsed}s — ${t('cors.testProxyBadDetail')}</span>`;
         return;
       }
       const text = await r.text();
       if (text && text.includes(':')) {
-        testProxyRes.innerHTML = `<span style="color:var(--success);">✓ Proxy OK · ${elapsed}s · ${text.split('\\n').length} righe ricevute</span>`;
+        testProxyRes.innerHTML = `<span style="color:var(--success);">✓ ${t('cors.testProxyOk')} · ${elapsed}s · ${text.split('\\n').length} ${currentLang==='it'?'righe ricevute':'lines received'}</span>`;
       } else {
-        testProxyRes.innerHTML = `<span style="color:var(--warning);">Risposta inattesa dopo ${elapsed}s — controlla il codice del Worker</span>`;
+        testProxyRes.innerHTML = `<span style="color:var(--warning);">${currentLang==='it'?'Risposta inattesa dopo':'Unexpected response after'} ${elapsed}s</span>`;
       }
     } catch (e) {
       const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
-      const msg = e.name === 'AbortError' ? `Timeout dopo ${elapsed}s` : (e.message || 'Errore');
-      testProxyRes.innerHTML = `<span style="color:var(--danger);">${msg} — il Worker non risponde o la URL è sbagliata</span>`;
+      const msg = e.name === 'AbortError' ? `${t('cors.testTimeout')} ${elapsed}s` : (e.message || 'Error');
+      testProxyRes.innerHTML = `<span style="color:var(--danger);">${msg} — ${t('cors.testProxyDown')}</span>`;
     }
   };
 
@@ -3081,10 +3411,10 @@ function renderConfigForm() {
   updatePersistStatus();
   const clearBtn = $('#clearStoredBtn');
   if (clearBtn) clearBtn.onclick = () => {
-    if (!confirm('Cancellare le chiavi cifrate salvate in localStorage?\n\nDovrai re-immetterle al prossimo login.')) return;
+    if (!confirm(t('persist.clearConfirm'))) return;
     clearPersistedConfig();
     updatePersistStatus();
-    toast('Configurazione cifrata cancellata.', 'success');
+    toast(t('persist.cleared'), 'success');
   };
 
   updateConfigStatuses();
