@@ -1359,7 +1359,7 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v1.9</span>
+        <span>v1.9.1</span>
         <span class="version-sep">·</span>
         <span>NOVA</span>
       </div>
@@ -2541,7 +2541,7 @@ Genera il report Identity Intelligence completo.`;
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-haiku-4-5',
         max_tokens: 2000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userMsg }]
