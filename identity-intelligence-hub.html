@@ -1165,6 +1165,13 @@ input, select, textarea { font-family: inherit; }
   50% { transform: translateY(4px) scale(0.985); }
 }
 
+/* Reduced motion: disable looping idle/floor animations */
+@media (prefers-reduced-motion: reduce) {
+  .avatar-floor, .av-body, .av-eyelids, .av-lens-flash, .av-caret,
+  .sk-pigtail-l, .sk-pigtail-r, .sk-wave-arm, .av-tears, .sk-anger { animation: none !important; }
+  .av-code { animation: none !important; }
+}
+
 /* HELLO (wave): right arm waving, big smile */
 .avatar-stage[data-state="hello"] .av-mouth-idle { opacity: 0; }
 .avatar-stage[data-state="hello"] .av-mouth-smile { opacity: 1; }
@@ -1531,9 +1538,9 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v2.5</span>
+        <span>v2.6</span>
         <span class="version-sep">·</span>
-        <span>hardened</span>
+        <span>avatar-arch</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
         OSINT · CTI · BREACH-DATA
@@ -2318,6 +2325,26 @@ app.listen(PORT, () => console.log('IntelHub proxy on ' + PORT));</pre>
             <button class="btn btn-ghost" id="copyMasterHash"><i data-lucide="copy"></i></button>
           </div>
         </div>
+
+        <!-- Avatar renderer selection -->
+        <div class="card">
+          <h3 data-i18n="avatar.title">Sakura — Avatar Renderer</h3>
+          <p class="muted" style="margin-bottom: 12px;" data-i18n="avatar.desc">
+            The avatar architecture supports multiple renderers, picked in priority order: Live2D → Sprite → Static → SVG (current floor). Drop production assets to upgrade fidelity without code changes.
+          </p>
+          <div class="row-flex" style="gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+            <label class="check"><input type="radio" name="avRenderer" value="auto" checked /> <span>Auto (priority)</span></label>
+            <label class="check"><input type="radio" name="avRenderer" value="live2d" /> <span>Live2D</span> <span class="badge neutral" style="font-size:0.62rem;">needs assets</span></label>
+            <label class="check"><input type="radio" name="avRenderer" value="sprite" /> <span>Sprite</span> <span class="badge neutral" style="font-size:0.62rem;">needs assets</span></label>
+            <label class="check"><input type="radio" name="avRenderer" value="static" /> <span>Static PNG</span> <span class="badge neutral" style="font-size:0.62rem;">needs assets</span></label>
+            <label class="check"><input type="radio" name="avRenderer" value="svg" /> <span>SVG</span> <span class="badge success" style="font-size:0.62rem;">active fallback</span></label>
+          </div>
+          <div class="muted" style="font-size: 0.78rem;" id="avRendererInfo">Active: <code id="avActiveRenderer">svg</code></div>
+          <details style="margin-top: 14px;">
+            <summary style="cursor: pointer; font-size: 0.85rem; color: var(--text-2);" data-i18n="avatar.manifest">Asset checklist for higher fidelity</summary>
+            <pre id="avManifestDump" style="background:var(--bg-2);padding:12px;border-radius:6px;overflow:auto;max-height:300px;font-size:0.72rem;margin-top:10px;"></pre>
+          </details>
+        </div>
       </section>
 
     </div>
@@ -2662,6 +2689,10 @@ const I18N = {
     'ai.skipped.title': 'No analysis needed',
     'ai.skipped.body': "The search returned <strong>0 hits</strong> across all configured connectors — no breach data to analyze. Claude API call skipped to save tokens.",
     'ai.skipped.action': 'Force run analysis anyway',
+    'avatar.title': 'Sakura — Avatar Renderer',
+    'avatar.desc': 'The avatar architecture supports multiple renderers, picked in priority order: Live2D → Sprite → Static → SVG (current floor). Drop production assets to upgrade fidelity without code changes.',
+    'avatar.manifest': 'Asset checklist for higher fidelity',
+    'avatar.active': 'Active',
     'lang.it': 'Italiano',
     'lang.en': 'English'
   },
@@ -2879,6 +2910,10 @@ const I18N = {
     'ai.skipped.title': 'Analisi non necessaria',
     'ai.skipped.body': "La ricerca non ha prodotto risultati (<strong>0 hit</strong>) su nessun connettore configurato — niente dati di breach da analizzare. Chiamata a Claude saltata per non consumare token.",
     'ai.skipped.action': 'Esegui comunque l\'analisi',
+    'avatar.title': 'Sakura — Renderer Avatar',
+    'avatar.desc': "L'architettura avatar supporta più renderer, scelti in ordine di priorità: Live2D → Sprite → Static → SVG (floor attuale). Carica gli asset di produzione per upgradare la fidelity senza modifiche al codice.",
+    'avatar.manifest': 'Checklist asset per fidelity più alta',
+    'avatar.active': 'Attivo',
     'lang.it': 'Italiano',
     'lang.en': 'English'
   }
@@ -3334,7 +3369,307 @@ Generate the complete Identity Intelligence report. Remember: for every cited re
   }
 }
 
-/* ============ Avatar (Sakura) ============ */
+/* ============================================================
+   Avatar System (Sakura) — modular architecture
+   ============================================================
+   Equivalente a:
+     /avatar/core/{controller, state-machine, events, config}.js
+     /avatar/renderers/{live2d, sprite, static, svg}.js
+     /avatar/assets/manifest.js
+   In single-file constraint, esposto come window.Avatar namespace.
+
+   Renderer priority: Live2D > Sprite > Static > SVG (floor).
+   Per upgradare la fidelity: drop in asset, switch renderer in Config.
+   ============================================================ */
+const Avatar = (() => {
+
+  /* ----- CONFIG -------------------------------------------------- */
+  const Config = {
+    rendererPriority: ['live2d', 'sprite', 'static', 'svg'],
+    activeRenderer: null,           // settato da Controller.init()
+    forceRenderer: null,            // override utente (da localStorage)
+    reduceMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false,
+    bubbleEl: null,
+    stageEl: null,
+    msgEl: null,
+    autoIdleAfterMs: 4500,
+    longSearchHintMs: 8000
+  };
+
+  /* ----- ASSET MANIFEST ----------------------------------------- */
+  // Documenta i requisiti per upgradare a renderer asset-driven.
+  // Solo SVG funziona out-of-the-box; gli altri sono stub pronti
+  // a ricevere asset reali via Config.setAsset().
+  const Manifest = {
+    live2d: {
+      description: 'Live2D Cubism 4 model — pipeline anime production-grade',
+      sdkUrl: 'https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js',
+      requiredAssets: {
+        modelJson: '<sakura>.model3.json',
+        moc: '<sakura>.moc3',
+        physics: '<sakura>.physics3.json',
+        textures: ['<sakura>/textures/texture_00.png', '... (1-4 atlas)'],
+        motions: {
+          idle: '<sakura>_idle.motion3.json',
+          attentive: '<sakura>_attentive.motion3.json',
+          thinking: '<sakura>_thinking.motion3.json',
+          success: '<sakura>_success.motion3.json',
+          warning: '<sakura>_warning.motion3.json',
+          error: '<sakura>_error.motion3.json',
+          speaking: '<sakura>_speaking.motion3.json'
+        },
+        expressions: ['neutral', 'smile', 'surprised', 'sad', 'angry', 'shy'],
+        parameters: ['ParamAngleX', 'ParamAngleY', 'ParamEyeBallX', 'ParamMouthOpenY', 'ParamHairFront', 'ParamBreath']
+      },
+      setupCost: '5-10 days for in-house Cubism Editor work, OR $300-800 commission',
+      qualityGain: '+80% fidelity vs SVG'
+    },
+    sprite: {
+      description: 'Layered sprite sheet — pre-rendered PNG poses',
+      requiredAssets: {
+        spriteSheet: 'sakura-sprites.png (typically 4096×4096 atlas)',
+        manifest: 'sakura-sprites.json (frame coords + duration per state)',
+        states: ['idle', 'attentive', 'thinking', 'searching', 'success', 'warning', 'error', 'speaking'],
+        frames: 'min 4 frames per state for talk/blink loops'
+      },
+      setupCost: '3-5 days for artist + atlas packing, $200-500 commission',
+      qualityGain: '+50% fidelity vs SVG'
+    },
+    static: {
+      description: 'Single PNG per state — minimum viable upgrade',
+      requiredAssets: {
+        images: {
+          idle: 'sakura-idle.png (~512×768, transparent)',
+          attentive: 'sakura-attentive.png',
+          searching: 'sakura-searching.png',
+          success: 'sakura-success.png',
+          error: 'sakura-error.png',
+          speaking: 'sakura-speaking.png',
+          warning: 'sakura-warning.png'
+        }
+      },
+      setupCost: '1-2 days illustration + cleanup',
+      qualityGain: '+25% fidelity vs SVG'
+    },
+    svg: {
+      description: 'Procedural SVG — current floor renderer (always works)',
+      requiredAssets: 'none',
+      setupCost: '0',
+      qualityGain: 'baseline'
+    }
+  };
+
+  /* ----- STATE MACHINE ------------------------------------------ */
+  const States = {
+    // Macro-stati
+    idle:        { tags: ['ambient'], priority: 0, autoDecayTo: null },
+    attentive:   { tags: ['ambient'], priority: 1, autoDecayTo: 'idle' },
+    listening:   { tags: ['ambient'], priority: 1, autoDecayTo: 'idle' },
+    thinking:    { tags: ['busy'],    priority: 2, autoDecayTo: null },
+    searching:   { tags: ['busy'],    priority: 2, autoDecayTo: null },
+    success:     { tags: ['result'],  priority: 3, autoDecayTo: 'idle' },
+    warning:     { tags: ['result'],  priority: 3, autoDecayTo: 'idle' },
+    error:       { tags: ['result'],  priority: 3, autoDecayTo: 'idle' },
+    empty:       { tags: ['result'],  priority: 2, autoDecayTo: 'idle' },
+    speaking:    { tags: ['result'],  priority: 3, autoDecayTo: 'idle' },
+    // Microstati / pose specifiche (mapping legacy + nuovi)
+    hello:       { tags: ['micro'],   priority: 4, autoDecayTo: 'idle' },
+    talking:     { tags: ['micro'],   priority: 3, autoDecayTo: null },
+    angry:       { tags: ['micro'],   priority: 3, autoDecayTo: 'idle' },
+    waving:      { tags: ['micro'],   priority: 4, autoDecayTo: 'idle' }
+  };
+
+  const StateMachine = {
+    current: 'idle',
+    decayTimer: null,
+    transition(next, opts = {}) {
+      if (!States[next]) return false;
+      // Non interrompere stati di priorità superiore con stati ambient (es. searching battezza success)
+      const cur = States[this.current];
+      const nxt = States[next];
+      if (!opts.force && cur && nxt.priority < cur.priority && cur.tags.includes('busy')) {
+        return false;
+      }
+      if (this.decayTimer) clearTimeout(this.decayTimer);
+      this.current = next;
+      Controller.applyState(next);
+      // Auto-decay (es. success → idle dopo 4.5s)
+      if (nxt.autoDecayTo) {
+        this.decayTimer = setTimeout(() => {
+          if (this.current === next) this.transition(nxt.autoDecayTo, { force: true });
+        }, Config.autoIdleAfterMs);
+      }
+      return true;
+    }
+  };
+
+  /* ----- EVENT MAPPING ------------------------------------------ */
+  // Mapping centralizzato app event → avatar state. Estendi qui per nuovi triggers.
+  const Events = {
+    map: {
+      'app.loaded':         { state: 'hello',     msg: 'hello' },
+      'app.idle':           { state: 'idle',      msg: 'idle' },
+      'input.focus':        { state: 'attentive' },
+      'input.typing':       { state: 'listening' },
+      'search.submit':      { state: 'searching', msg: 'searching' },
+      'search.long':        { state: 'searching', msg: 'searchingLong' },
+      'search.success':     { state: 'success',   msg: 'success' },
+      'search.empty':       { state: 'empty',     msg: 'success' },
+      'search.partialFail': { state: 'warning',   msg: 'partialError' },
+      'search.error':       { state: 'error',     msg: 'error' },
+      'connector.blocked':  { state: 'angry',     msg: 'angry' },
+      'response.rendered':  { state: 'speaking' }
+    },
+    fire(eventName, ...args) {
+      const m = this.map[eventName];
+      if (!m) return;
+      const message = m.msg ? avatarMsg(m.msg, ...args) : null;
+      Controller.setState(m.state, message);
+    }
+  };
+
+  /* ----- RENDERER INTERFACE -------------------------------------
+     Ogni renderer implementa:
+       isAvailable() → boolean (può essere attivato?)
+       mount(stageEl) → void (init DOM/SDK)
+       applyState(state) → void
+       speak(message) → void
+       unmount() → void
+  ---------------------------------------------------------------- */
+  const Renderers = {};
+
+  /* SVG renderer — usa l'SVG procedurale già nel DOM (floor) */
+  Renderers.svg = {
+    name: 'svg',
+    isAvailable() {
+      return !!document.querySelector('.avatar-svg');
+    },
+    mount(stage) { this.stage = stage; },
+    applyState(state) {
+      // Map nuovi stati a quelli esistenti CSS-driven della SVG
+      const cssState = {
+        attentive: 'idle', listening: 'idle', thinking: 'searching',
+        empty: 'idle', speaking: 'success', waving: 'hello'
+      }[state] || state;
+      if (this.stage) this.stage.dataset.state = cssState;
+    },
+    speak(_message) { /* SVG non ha lip-sync; bubble fa il lavoro */ },
+    unmount() { /* niente da pulire */ }
+  };
+
+  /* Static renderer — drop-in se l'utente carica PNG per stato */
+  Renderers.static = {
+    name: 'static',
+    images: {},  // { state: url }
+    isAvailable() {
+      return Object.keys(Config.staticAssets || {}).length > 0;
+    },
+    mount(stage) {
+      this.stage = stage;
+      this.imgEl = document.createElement('img');
+      this.imgEl.className = 'avatar-static-img';
+      this.imgEl.alt = 'Sakura';
+      this.imgEl.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+      stage.querySelector('.avatar-frame').appendChild(this.imgEl);
+      this.images = Config.staticAssets || {};
+    },
+    applyState(state) {
+      const url = this.images[state] || this.images.idle;
+      if (url && this.imgEl) this.imgEl.src = url;
+    },
+    speak(_message) {},
+    unmount() { this.imgEl?.remove(); }
+  };
+
+  /* Sprite renderer — stub: leggi sprite-manifest, anima frame */
+  Renderers.sprite = {
+    name: 'sprite',
+    isAvailable() {
+      return !!(Config.spriteSheet && Config.spriteManifest);
+    },
+    mount(stage) {
+      this.stage = stage;
+      // TODO: caricare sprite-sheet, posizionare via background-position,
+      //       loop frame con requestAnimationFrame.
+      console.info('[Avatar.sprite] Mounted but not yet rendering — drop sprite assets to enable.');
+    },
+    applyState(_state) { /* TODO frame swap */ },
+    speak(_message) {},
+    unmount() {}
+  };
+
+  /* Live2D renderer — stub: detect SDK + model, render Cubism */
+  Renderers.live2d = {
+    name: 'live2d',
+    isAvailable() {
+      return !!(window.Live2DCubismCore && Config.live2dModelUrl);
+    },
+    mount(stage) {
+      this.stage = stage;
+      console.info('[Avatar.live2d] SDK detected, model URL configured. Initialize Cubism here.');
+      // TODO: load PIXI + Cubism, instantiate model, expose param API:
+      //   this.model.setParameterValueById('ParamAngleX', x);
+      //   this.model.setParameterValueById('ParamMouthOpenY', y);
+      //   this.startMotion('idle', 'anim_idle_01');
+    },
+    applyState(_state) { /* TODO trigger motion + expression */ },
+    speak(_message) { /* TODO mouth open animation per sillabe */ },
+    unmount() {}
+  };
+
+  /* ----- CONTROLLER --------------------------------------------- */
+  const Controller = {
+    init() {
+      Config.stageEl = document.getElementById('avatarStage');
+      Config.msgEl = document.getElementById('avatarBubbleMsg');
+      if (!Config.stageEl) return;
+
+      // Choose renderer: forced (user pref) or first available by priority
+      const forced = Config.forceRenderer || localStorage.getItem('intelhub-avatar-renderer');
+      let chosen = null;
+      if (forced && Renderers[forced]?.isAvailable()) {
+        chosen = forced;
+      } else {
+        for (const r of Config.rendererPriority) {
+          if (Renderers[r]?.isAvailable()) { chosen = r; break; }
+        }
+      }
+      Config.activeRenderer = chosen;
+      if (chosen) {
+        Renderers[chosen].mount(Config.stageEl);
+        Config.stageEl.setAttribute('data-renderer', chosen);
+      }
+    },
+    setState(state, message) {
+      if (!States[state]) state = 'idle';
+      StateMachine.transition(state);
+      if (message != null) this.speak(message);
+    },
+    applyState(state) {
+      // Chiamato dallo state machine, delega al renderer attivo
+      const r = Renderers[Config.activeRenderer];
+      if (r) r.applyState(state);
+    },
+    speak(message) {
+      if (!Config.msgEl) return;
+      Config.msgEl.style.opacity = '0';
+      setTimeout(() => { Config.msgEl.textContent = message; Config.msgEl.style.opacity = '1'; }, 150);
+      Renderers[Config.activeRenderer]?.speak(message);
+    },
+    setRenderer(name) {
+      if (!Renderers[name]) return false;
+      if (Config.activeRenderer) Renderers[Config.activeRenderer].unmount();
+      Config.forceRenderer = name;
+      localStorage.setItem('intelhub-avatar-renderer', name);
+      this.init();
+      return true;
+    }
+  };
+
+  return { Config, Manifest, States, StateMachine, Events, Renderers, Controller };
+})();
+
+/* ----- AVATAR_LINES (i18n messages, retained from previous versions) ----- */
 const AVATAR_LINES = {
   en: {
     hello: "Hi! I'm Sakura, your OSINT analyst. Run a query and I'll dig in for you!",
@@ -3362,18 +3697,8 @@ const AVATAR_LINES = {
   }
 };
 
-let _avatarStateTimer = null;
-function setAvatarState(state, message) {
-  const stage = document.getElementById('avatarStage');
-  const msg = document.getElementById('avatarBubbleMsg');
-  if (!stage || !msg) return;
-  if (_avatarStateTimer) { clearTimeout(_avatarStateTimer); _avatarStateTimer = null; }
-  stage.dataset.state = state;
-  if (message) {
-    msg.style.opacity = '0';
-    setTimeout(() => { msg.textContent = message; msg.style.opacity = '1'; }, 150);
-  }
-}
+/* ----- BACKWARD-COMPAT SHIMS (le call site esistenti continuano a funzionare) ----- */
+function setAvatarState(state, message) { Avatar.Controller.setState(state, message); }
 function avatarMsg(key, ...args) {
   const lines = AVATAR_LINES[currentLang] || AVATAR_LINES.en;
   const v = lines[key];
@@ -4104,6 +4429,33 @@ function renderConfigForm() {
   };
   $('#masterHash').value = state.apiKeys.master ? '(calcolato al login)' : '';
 
+  // Avatar renderer selection
+  const avActive = $('#avActiveRenderer');
+  if (avActive) avActive.textContent = Avatar.Config.activeRenderer || 'svg';
+  const avInfoEl = $('#avRendererInfo');
+  $$('input[name=avRenderer]').forEach(r => {
+    const stored = localStorage.getItem('intelhub-avatar-renderer') || 'auto';
+    r.checked = (r.value === stored);
+    r.onchange = () => {
+      if (!r.checked) return;
+      if (r.value === 'auto') {
+        localStorage.removeItem('intelhub-avatar-renderer');
+        Avatar.Config.forceRenderer = null;
+      } else {
+        localStorage.setItem('intelhub-avatar-renderer', r.value);
+        Avatar.Config.forceRenderer = r.value;
+      }
+      Avatar.Controller.init();
+      if (avActive) avActive.textContent = Avatar.Config.activeRenderer || 'svg';
+      const wasAvailable = Avatar.Renderers[r.value]?.isAvailable();
+      if (r.value !== 'auto' && r.value !== 'svg' && !wasAvailable) {
+        toast(`${r.value}: assets not configured — falling back to ${Avatar.Config.activeRenderer}`, 'warning');
+      }
+    };
+  });
+  const avManifestDump = $('#avManifestDump');
+  if (avManifestDump) avManifestDump.textContent = JSON.stringify(Avatar.Manifest, null, 2);
+
   // Persist UI
   updatePersistStatus();
   const clearBtn = $('#clearStoredBtn');
@@ -4251,6 +4603,8 @@ async function login() {
   }
   $('#loginModal').classList.remove('open');
   $('#app').classList.add('authed');
+  // Init avatar system (renderer selection by priority)
+  Avatar.Controller.init();
   // Reset counters il cui period (day/month) è cambiato dall'ultima sessione
   if (maybeResetCounters()) schedulePersist();
   renderRecent();
