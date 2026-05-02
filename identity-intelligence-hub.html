@@ -297,6 +297,32 @@ input, select, textarea { font-family: inherit; }
   transform: translateY(-1px);
 }
 
+/* Language switcher */
+.lang-switch {
+  display: inline-flex;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+}
+.lang-btn {
+  padding: 4px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border-radius: 6px;
+  color: var(--text-3);
+  transition: all 0.15s;
+}
+.lang-btn:hover { color: var(--text-1); }
+.lang-btn.active {
+  background: var(--gradient);
+  color: #fff;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
 .content { padding: 32px; max-width: 1280px; width: 100%; flex: 1; }
 .section { display: none; }
 .section.active { display: block; animation: fadeIn 0.25s ease; }
@@ -336,6 +362,25 @@ input, select, textarea { font-family: inherit; }
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
+.card-elevated {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-1) 85%, var(--accent)) 0%, var(--bg-1) 100%);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+  box-shadow: 0 14px 48px rgba(0,0,0,0.35), 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent) inset;
+  position: relative;
+}
+.card-elevated::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 14px;
+  padding: 1.5px;
+  background: var(--gradient);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.card-elevated:hover::before { opacity: 0.9; }
 
 /* ========== FORMS ========== */
 .field { margin-bottom: 16px; }
@@ -781,7 +826,42 @@ input, select, textarea { font-family: inherit; }
 .stat-trend.up { color: var(--success); }
 .stat-trend.warn { color: var(--warning); }
 
-/* Radar widget nel hero */
+/* Hero art (anime cyber investigator) */
+.hero-art {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  aspect-ratio: 1;
+}
+.anime-svg { width: 100%; height: 100%; display: block; }
+.anime-svg .float-slow { animation: floatY 7s ease-in-out infinite; transform-origin: center; }
+.anime-svg .float-mid { animation: floatY 5s ease-in-out infinite; transform-origin: center; }
+.anime-svg .float-fast { animation: floatY 3.5s ease-in-out infinite; transform-origin: center; }
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.anime-svg .lens-flash {
+  animation: lensFlash 4.5s ease-in-out infinite;
+}
+@keyframes lensFlash {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.45; }
+}
+.anime-svg .caret {
+  animation: caretBlink 1s steps(2) infinite;
+}
+@keyframes caretBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.anime-svg .mini-sweep {
+  transform-origin: 40px 240px;
+  animation: sweep 4s linear infinite;
+}
+
+/* Radar widget legacy (still used elsewhere?) */
 .radar-widget {
   position: relative;
   width: 100%; aspect-ratio: 1;
@@ -1008,22 +1088,25 @@ input, select, textarea { font-family: inherit; }
         </svg>
       </div>
     </div>
-    <h2 style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">Intel-Hub</h2>
-    <p style="margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3);">Identity Intelligence Hub</p>
-    <p style="margin-top: 16px;">Inserisci la tua Master API Key per accedere alla piattaforma</p>
+    <h2 data-i18n="login.title" style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">Intel-Hub</h2>
+    <p data-i18n="login.sub" style="margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3);">Identity Intelligence Hub</p>
+    <p data-i18n="login.subtitle" style="margin-top: 16px;">Inserisci la tua Master API Key per accedere alla piattaforma</p>
     <div class="field">
-      <label for="masterKey">Master API Key</label>
+      <label for="masterKey" data-i18n="login.label">Master API Key</label>
       <input id="masterKey" class="input" type="password" placeholder="••••••••••••••••" autocomplete="off" />
     </div>
     <div id="loginError" class="warning-box" style="display:none;">
       <i data-lucide="alert-triangle" class="icon"></i>
-      <span>Chiave non valida. Riprova.</span>
+      <span data-i18n="login.invalid">Chiave non valida. Riprova.</span>
     </div>
     <button id="loginBtn" class="btn btn-primary" style="width: 100%;">
-      <i data-lucide="log-in"></i> Accedi
+      <i data-lucide="log-in"></i> <span data-i18n="login.btn">Accedi</span>
     </button>
-    <p style="margin-top: 16px; font-size: 0.75rem; color: var(--text-3);">
+    <p data-i18n="login.disclaimer" style="margin-top: 16px; font-size: 0.75rem; color: var(--text-3);">
       Le API Key dei servizi sono cifrate (AES-GCM) in localStorage con la Master Key come passphrase. Persistite tra sessioni. Master Key e risultati non vengono mai salvati.
+    </p>
+    <p style="margin-top: 12px; text-align: center; font-size: 0.78rem;">
+      <a id="forgotKeyLink" href="#" style="color: var(--accent);"><span data-i18n="login.forgot">Master Key dimenticata?</span></a>
     </p>
   </div>
 </div>
@@ -1044,19 +1127,19 @@ input, select, textarea { font-family: inherit; }
         <span class="brand-sub">Identity Intelligence</span>
       </div>
     </div>
-    <div class="nav-section-label">Operations</div>
-    <a class="nav-item" data-route="search"><i data-lucide="search"></i> <span>Ricerca</span></a>
-    <a class="nav-item" data-route="results"><i data-lucide="layers"></i> <span>Risultati</span></a>
-    <div class="nav-section-label">System</div>
-    <a class="nav-item" data-route="limits"><i data-lucide="gauge"></i> <span>Rate Limits</span></a>
-    <a class="nav-item" data-route="config"><i data-lucide="settings"></i> <span>Configurazione</span></a>
+    <div class="nav-section-label" data-i18n="nav.operations">Operations</div>
+    <a class="nav-item" data-route="search"><i data-lucide="search"></i> <span data-i18n="nav.search">Ricerca</span></a>
+    <a class="nav-item" data-route="results"><i data-lucide="layers"></i> <span data-i18n="nav.results">Risultati</span></a>
+    <div class="nav-section-label" data-i18n="nav.system">System</div>
+    <a class="nav-item" data-route="limits"><i data-lucide="gauge"></i> <span data-i18n="nav.limits">Rate Limits</span></a>
+    <a class="nav-item" data-route="config"><i data-lucide="settings"></i> <span data-i18n="nav.config">Configurazione</span></a>
     <div class="spacer"></div>
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v1.7</span>
+        <span>v1.8</span>
         <span class="version-sep">·</span>
-        <span>encrypted</span>
+        <span>i18n + secured</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
         OSINT · CTI · BREACH-DATA
@@ -1075,12 +1158,16 @@ input, select, textarea { font-family: inherit; }
       <div class="topbar-right">
         <span class="rate-pill" id="ratePill">
           <span class="dot"></span>
-          <span>Tutti i servizi operativi</span>
+          <span data-i18n="topbar.allOk">Tutti i servizi operativi</span>
         </span>
-        <button class="icon-btn" id="themeToggle" aria-label="Tema">
+        <div class="lang-switch" id="langSwitch">
+          <button class="lang-btn" data-lang="en" title="English">EN</button>
+          <button class="lang-btn" data-lang="it" title="Italiano">IT</button>
+        </div>
+        <button class="icon-btn" id="themeToggle" aria-label="Theme">
           <i data-lucide="moon"></i>
         </button>
-        <button class="icon-btn" id="logoutBtn" aria-label="Esci" title="Esci">
+        <button class="icon-btn" id="logoutBtn" aria-label="Sign out" title="Sign out">
           <i data-lucide="log-out"></i>
         </button>
       </div>
@@ -1096,130 +1183,275 @@ input, select, textarea { font-family: inherit; }
             <div>
               <div class="hero-eyebrow">
                 <span class="dot"></span>
-                <span>Live Intelligence Console</span>
+                <span data-i18n="hero.eyebrow">Live Intelligence Console</span>
               </div>
-              <h1>Aggrega <span class="grad">Identity Intelligence</span> da OSINT in tempo reale</h1>
-              <p>Esegui un'unica query e correla i risultati da IntelX, HIBP, BreachDirectory e LeakIX. Analisi automatica generata da Claude.</p>
+              <h1><span data-i18n="hero.title.before">Aggrega </span><span class="grad" data-i18n="hero.title.gradient">Identity Intelligence</span><span data-i18n="hero.title.after"> da OSINT in tempo reale</span></h1>
+              <p data-i18n="hero.subtitle">Esegui un'unica query e correla i risultati da IntelX, HIBP, BreachDirectory e LeakIX. Analisi automatica generata da Claude.</p>
               <div class="stat-grid">
                 <div class="stat-item">
-                  <div class="stat-label">Query Sessione</div>
+                  <div class="stat-label" data-i18n="stat.queries">Query Sessione</div>
                   <div class="stat-value" id="statQueries">0</div>
-                  <div class="stat-trend">in-memory</div>
+                  <div class="stat-trend" data-i18n="stat.queries.sub">in-memory</div>
                 </div>
                 <div class="stat-item">
-                  <div class="stat-label">Connettori Attivi</div>
+                  <div class="stat-label" data-i18n="stat.active">Connettori Attivi</div>
                   <div class="stat-value" id="statActive">0</div>
-                  <div class="stat-trend up" id="statActiveDelta">/ 4 disponibili</div>
+                  <div class="stat-trend up" id="statActiveDelta" data-i18n="stat.active.sub">/ 4 disponibili</div>
                 </div>
                 <div class="stat-item">
-                  <div class="stat-label">Hit Totali</div>
+                  <div class="stat-label" data-i18n="stat.hits">Hit Totali</div>
                   <div class="stat-value" id="statHits">0</div>
-                  <div class="stat-trend">leak + breach</div>
+                  <div class="stat-trend" data-i18n="stat.hits.sub">leak + breach</div>
                 </div>
                 <div class="stat-item">
-                  <div class="stat-label">Avg Latency</div>
+                  <div class="stat-label" data-i18n="stat.latency">Avg Latency</div>
                   <div class="stat-value" id="statLatency">—</div>
-                  <div class="stat-trend">via proxy</div>
+                  <div class="stat-trend" data-i18n="stat.latency.sub">via proxy</div>
                 </div>
               </div>
             </div>
-            <div class="radar-widget">
-              <svg class="radar-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <div class="hero-art">
+              <!-- Anime cyber-investigator scene -->
+              <svg class="anime-svg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                  <radialGradient id="sweepGrad" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.4"/>
-                    <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+                  <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#5eead4"/>
+                    <stop offset="100%" stop-color="#818cf8"/>
+                  </linearGradient>
+                  <linearGradient id="hoodieGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1a212d"/>
+                    <stop offset="100%" stop-color="#0a0e15"/>
+                  </linearGradient>
+                  <linearGradient id="screenGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#5eead4" stop-opacity="0.95"/>
+                    <stop offset="100%" stop-color="#818cf8" stop-opacity="0.95"/>
+                  </linearGradient>
+                  <radialGradient id="glowGrad">
+                    <stop offset="0%" stop-color="#5eead4" stop-opacity="0.5"/>
+                    <stop offset="100%" stop-color="#5eead4" stop-opacity="0"/>
                   </radialGradient>
+                  <radialGradient id="sweepGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#5eead4" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="#5eead4" stop-opacity="0"/>
+                  </radialGradient>
+                  <filter id="softGlow">
+                    <feGaussianBlur stdDeviation="2"/>
+                    <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
                 </defs>
-                <circle class="radar-ring" cx="100" cy="100" r="92"/>
-                <circle class="radar-ring" cx="100" cy="100" r="68" style="opacity:0.7"/>
-                <circle class="radar-ring" cx="100" cy="100" r="44" style="opacity:0.5"/>
-                <circle class="radar-ring" cx="100" cy="100" r="20" style="opacity:0.3"/>
-                <line class="radar-cross" x1="100" y1="8" x2="100" y2="192"/>
-                <line class="radar-cross" x1="8" y1="100" x2="192" y2="100"/>
-                <path class="radar-sweep" d="M 100 100 L 100 8 A 92 92 0 0 1 192 100 Z"/>
-                <circle class="radar-blip" cx="135" cy="65" r="3" style="animation-delay: 0s;"/>
-                <circle class="radar-blip" cx="60" cy="130" r="3" style="animation-delay: 0.8s;"/>
-                <circle class="radar-blip" cx="155" cy="120" r="3" style="animation-delay: 1.6s;"/>
-                <circle class="radar-blip" cx="80" cy="55" r="3" style="animation-delay: 2.4s;"/>
-                <circle cx="100" cy="100" r="3" fill="var(--accent)" style="filter: drop-shadow(0 0 6px var(--accent));"/>
+
+                <!-- Background ambient glow behind character -->
+                <ellipse cx="160" cy="180" rx="130" ry="100" fill="url(#glowGrad)"/>
+
+                <!-- Floating cyber elements (back layer) -->
+                <g class="float-slow" opacity="0.7">
+                  <rect x="30" y="30" width="60" height="42" rx="5" fill="#11161f" stroke="#5eead4" stroke-width="0.8" opacity="0.85"/>
+                  <circle cx="36" cy="36" r="1.5" fill="#f87171"/>
+                  <circle cx="42" cy="36" r="1.5" fill="#fbbf24"/>
+                  <circle cx="48" cy="36" r="1.5" fill="#34d399"/>
+                  <text x="36" y="48" font-family="JetBrains Mono, monospace" font-size="4" fill="#5eead4">$ scan --target</text>
+                  <text x="36" y="55" font-family="JetBrains Mono, monospace" font-size="4" fill="#aab5c2">.io intel-x</text>
+                  <text x="36" y="62" font-family="JetBrains Mono, monospace" font-size="4" fill="#34d399">[OK] 10 hits</text>
+                  <text x="36" y="68" font-family="JetBrains Mono, monospace" font-size="4" fill="#aab5c2" opacity="0.6">_</text>
+                </g>
+
+                <g class="float-mid" opacity="0.85">
+                  <!-- Lock badge top right -->
+                  <circle cx="265" cy="60" r="22" fill="#11161f" stroke="#818cf8" stroke-width="0.8"/>
+                  <rect x="258" y="56" width="14" height="11" rx="2" fill="none" stroke="#818cf8" stroke-width="1.4"/>
+                  <path d="M 261 56 L 261 51 A 4 4 0 0 1 269 51 L 269 56" fill="none" stroke="#818cf8" stroke-width="1.4"/>
+                  <circle cx="265" cy="61.5" r="1.5" fill="#818cf8"/>
+                </g>
+
+                <g class="float-fast" opacity="0.6">
+                  <!-- Hash chip middle right -->
+                  <rect x="240" y="115" width="58" height="18" rx="9" fill="#11161f" stroke="#f472b6" stroke-width="0.6"/>
+                  <text x="246" y="127" font-family="JetBrains Mono, monospace" font-size="6" fill="#f472b6" font-weight="600">#a3f1...e9b</text>
+                </g>
+
+                <g class="float-slow" opacity="0.7">
+                  <!-- Magnifier bottom right -->
+                  <circle cx="280" cy="240" r="14" fill="none" stroke="#5eead4" stroke-width="1.4"/>
+                  <line x1="290" y1="250" x2="296" y2="256" stroke="#5eead4" stroke-width="1.8" stroke-linecap="round"/>
+                  <circle cx="280" cy="240" r="9" fill="none" stroke="#5eead4" stroke-width="0.6" opacity="0.5"/>
+                </g>
+
+                <g class="float-mid" opacity="0.6">
+                  <!-- Mini radar bottom left -->
+                  <circle cx="40" cy="240" r="22" fill="none" stroke="#5eead4" stroke-width="0.6"/>
+                  <circle cx="40" cy="240" r="14" fill="none" stroke="#5eead4" stroke-width="0.4" opacity="0.6"/>
+                  <circle cx="40" cy="240" r="6" fill="none" stroke="#5eead4" stroke-width="0.4" opacity="0.4"/>
+                  <line x1="40" y1="218" x2="40" y2="262" stroke="#5eead4" stroke-width="0.3" stroke-dasharray="1 2"/>
+                  <line x1="18" y1="240" x2="62" y2="240" stroke="#5eead4" stroke-width="0.3" stroke-dasharray="1 2"/>
+                  <path class="mini-sweep" d="M 40 240 L 40 218 A 22 22 0 0 1 62 240 Z" fill="url(#sweepGrad)"/>
+                  <circle cx="40" cy="240" r="2" fill="#5eead4"/>
+                </g>
+
+                <!-- CHARACTER -->
+                <g transform="translate(160 175)">
+                  <!-- Hoodie body -->
+                  <path d="M -65 60 Q -75 0 -55 -30 L -30 -45 Q 0 -55 30 -45 L 55 -30 Q 75 0 65 60 Z" fill="url(#hoodieGrad)" stroke="#5eead4" stroke-width="0.6" stroke-opacity="0.5"/>
+                  <!-- Hoodie inner shadow -->
+                  <path d="M -55 -30 Q -45 -10 -42 5 L -36 10 L 36 10 L 42 5 Q 45 -10 55 -30 Z" fill="#000" opacity="0.45"/>
+                  <!-- Hoodie strings -->
+                  <line x1="-15" y1="-15" x2="-15" y2="20" stroke="#5eead4" stroke-width="0.8" opacity="0.7"/>
+                  <line x1="15" y1="-15" x2="15" y2="20" stroke="#5eead4" stroke-width="0.8" opacity="0.7"/>
+                  <circle cx="-15" cy="22" r="2" fill="#5eead4"/>
+                  <circle cx="15" cy="22" r="2" fill="#5eead4"/>
+
+                  <!-- Hair side fringes (pinkish-teal) peeking out of hood -->
+                  <path d="M -42 -38 Q -50 -25 -45 -10 L -38 -8 Q -38 -25 -34 -38 Z" fill="url(#hairGrad)"/>
+                  <path d="M 42 -38 Q 50 -25 45 -10 L 38 -8 Q 38 -25 34 -38 Z" fill="url(#hairGrad)"/>
+
+                  <!-- Face -->
+                  <ellipse cx="0" cy="-30" rx="26" ry="30" fill="#f5d4b3"/>
+                  <!-- Hood shadow over forehead -->
+                  <path d="M -26 -45 Q 0 -65 26 -45 L 26 -32 Q 0 -42 -26 -32 Z" fill="#000" opacity="0.35"/>
+
+                  <!-- Hair bangs -->
+                  <path d="M -22 -42 Q -10 -50 0 -42 Q 10 -52 22 -42 Q 18 -32 8 -34 Q 0 -40 -8 -34 Q -18 -32 -22 -42 Z" fill="url(#hairGrad)"/>
+
+                  <!-- Glasses -->
+                  <g class="glasses">
+                    <rect x="-19" y="-30" width="14" height="10" rx="3" fill="none" stroke="#5eead4" stroke-width="1.4"/>
+                    <rect x="5" y="-30" width="14" height="10" rx="3" fill="none" stroke="#5eead4" stroke-width="1.4"/>
+                    <line x1="-5" y1="-25" x2="5" y2="-25" stroke="#5eead4" stroke-width="1.4"/>
+                    <!-- Lens reflection (animated) -->
+                    <rect class="lens-flash" x="-19" y="-30" width="14" height="10" rx="3" fill="#5eead4" opacity="0.3"/>
+                    <rect class="lens-flash" x="5" y="-30" width="14" height="10" rx="3" fill="#5eead4" opacity="0.3" style="animation-delay:0.4s"/>
+                  </g>
+
+                  <!-- Mouth (small focused expression) -->
+                  <path d="M -4 -10 Q 0 -7 4 -10" fill="none" stroke="#9c6a4a" stroke-width="1.2" stroke-linecap="round"/>
+
+                  <!-- Hood opening highlight -->
+                  <path d="M -26 -45 Q 0 -65 26 -45" fill="none" stroke="#5eead4" stroke-width="0.6" opacity="0.7"/>
+
+                  <!-- Arms / hands on laptop -->
+                  <path d="M -55 35 Q -50 50 -38 55 L -28 50 Q -36 38 -42 35 Z" fill="url(#hoodieGrad)" stroke="#5eead4" stroke-width="0.4" stroke-opacity="0.4"/>
+                  <path d="M 55 35 Q 50 50 38 55 L 28 50 Q 36 38 42 35 Z" fill="url(#hoodieGrad)" stroke="#5eead4" stroke-width="0.4" stroke-opacity="0.4"/>
+
+                  <!-- Hand tone -->
+                  <ellipse cx="-32" cy="52" rx="6" ry="4" fill="#f5d4b3"/>
+                  <ellipse cx="32" cy="52" rx="6" ry="4" fill="#f5d4b3"/>
+
+                  <!-- Laptop -->
+                  <g transform="translate(0 60)">
+                    <!-- Base -->
+                    <path d="M -54 12 L -50 20 L 50 20 L 54 12 Z" fill="#1a212d" stroke="#2f3a4a" stroke-width="0.6"/>
+                    <!-- Screen back -->
+                    <rect x="-50" y="-22" width="100" height="34" rx="2" fill="#0a0e15" stroke="#2f3a4a" stroke-width="0.6"/>
+                    <!-- Screen content (gradient + code) -->
+                    <rect x="-47" y="-19" width="94" height="28" rx="1" fill="url(#screenGrad)" opacity="0.18"/>
+                    <line x1="-44" y1="-15" x2="-22" y2="-15" stroke="#5eead4" stroke-width="0.8" opacity="0.9"/>
+                    <line x1="-44" y1="-11" x2="-12" y2="-11" stroke="#aab5c2" stroke-width="0.6" opacity="0.7"/>
+                    <line x1="-44" y1="-7" x2="-32" y2="-7" stroke="#aab5c2" stroke-width="0.6" opacity="0.5"/>
+                    <line x1="-44" y1="-3" x2="-18" y2="-3" stroke="#5eead4" stroke-width="0.6" opacity="0.7"/>
+                    <line x1="-44" y1="1" x2="-26" y2="1" stroke="#aab5c2" stroke-width="0.6" opacity="0.5"/>
+                    <line x1="-44" y1="5" x2="-15" y2="5" stroke="#34d399" stroke-width="0.6" opacity="0.8"/>
+                    <!-- Right side: small pulsing chart -->
+                    <rect x="20" y="-10" width="22" height="2" fill="#5eead4" opacity="0.7"/>
+                    <rect x="20" y="-6" width="14" height="2" fill="#5eead4" opacity="0.5"/>
+                    <rect x="20" y="-2" width="18" height="2" fill="#f472b6" opacity="0.6"/>
+                    <rect x="20" y="2" width="10" height="2" fill="#5eead4" opacity="0.4"/>
+                    <!-- Cursor -->
+                    <rect class="caret" x="-18" y="3" width="2" height="4" fill="#5eead4"/>
+                    <!-- Apple/Dot logo on lid back -->
+                    <circle cx="0" cy="-5" r="1.5" fill="#5eead4" opacity="0.3"/>
+                  </g>
+                </g>
+
+                <!-- Floating data particles -->
+                <g class="particles">
+                  <circle cx="100" cy="100" r="1.5" fill="#5eead4" opacity="0.6"><animate attributeName="cy" values="100;90;100" dur="4s" repeatCount="indefinite"/></circle>
+                  <circle cx="220" cy="150" r="1.5" fill="#f472b6" opacity="0.6"><animate attributeName="cy" values="150;140;150" dur="5s" repeatCount="indefinite"/></circle>
+                  <circle cx="80" cy="180" r="1.5" fill="#818cf8" opacity="0.6"><animate attributeName="cx" values="80;70;80" dur="6s" repeatCount="indefinite"/></circle>
+                  <circle cx="240" cy="200" r="1.5" fill="#5eead4" opacity="0.6"><animate attributeName="cy" values="200;210;200" dur="3.5s" repeatCount="indefinite"/></circle>
+                </g>
               </svg>
             </div>
           </div>
         </div>
 
-        <!-- Service status pills -->
-        <div class="card scan-overlay">
-          <div class="row-flex" style="justify-content: space-between; margin-bottom: 12px;">
+        <!-- QUERY BUILDER (core dell'app, posto centrale subito dopo l'hero) -->
+        <div class="card card-elevated">
+          <div class="row-flex" style="justify-content: space-between; margin-bottom: 14px;">
             <div>
-              <div class="section-eyebrow">Connector Mesh</div>
-              <h3 style="margin-bottom: 0;">Stato connettori</h3>
+              <div class="section-eyebrow" data-i18n="search.eyebrow">Query Builder</div>
+              <h2 style="margin-bottom: 0;" data-i18n="search.title">Esegui una ricerca OSINT</h2>
             </div>
-            <span class="muted" style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;" id="meshStatus">monitoring</span>
           </div>
-          <div class="svc-status-grid" id="svcStatusGrid"></div>
-        </div>
-
-        <div class="card">
           <div class="row-flex" style="margin-bottom: 16px;">
             <div style="flex: 2; min-width: 240px;">
               <label class="field" style="margin-bottom:0;">
-                <span style="display:block;font-size:0.82rem;color:var(--text-2);margin-bottom:6px;font-weight:500;">Keyword</span>
-                <input id="kw" class="input" placeholder="es. mario.rossi@example.com" />
+                <span data-i18n="search.kw" style="display:block;font-size:0.82rem;color:var(--text-2);margin-bottom:6px;font-weight:500;">Keyword</span>
+                <input id="kw" class="input" data-i18n-placeholder="search.kw.placeholder" placeholder="es. mario.rossi@example.com" />
               </label>
             </div>
             <div style="flex: 1; min-width: 160px;">
               <label class="field" style="margin-bottom:0;">
-                <span style="display:block;font-size:0.82rem;color:var(--text-2);margin-bottom:6px;font-weight:500;">Tipo</span>
+                <span data-i18n="search.type" style="display:block;font-size:0.82rem;color:var(--text-2);margin-bottom:6px;font-weight:500;">Tipo</span>
                 <select id="kwType" class="select">
-                  <option value="email">Email</option>
-                  <option value="name">Nome/Cognome</option>
-                  <option value="phone">Telefono</option>
-                  <option value="domain">Dominio</option>
-                  <option value="ip">IP</option>
-                  <option value="url">URL</option>
-                  <option value="password">Password</option>
+                  <option value="email" data-i18n="search.type.email">Email</option>
+                  <option value="name" data-i18n="search.type.name">Nome/Cognome</option>
+                  <option value="phone" data-i18n="search.type.phone">Telefono</option>
+                  <option value="domain" data-i18n="search.type.domain">Dominio</option>
+                  <option value="ip" data-i18n="search.type.ip">IP</option>
+                  <option value="url" data-i18n="search.type.url">URL</option>
+                  <option value="password" data-i18n="search.type.password">Password</option>
                 </select>
               </label>
             </div>
           </div>
 
           <div class="field">
-            <label>Servizi attivi</label>
+            <label data-i18n="search.services">Servizi attivi</label>
             <div class="checkbox-group" id="serviceChecks"></div>
           </div>
 
           <div class="row-flex">
             <button id="searchBtn" class="btn btn-primary">
-              <i data-lucide="search"></i> Avvia Ricerca
+              <i data-lucide="search"></i> <span data-i18n="search.run">Avvia Ricerca</span>
             </button>
             <button id="clearBtn" class="btn btn-ghost btn-sm">
-              <i data-lucide="x"></i> Pulisci
+              <i data-lucide="x"></i> <span data-i18n="search.clear">Pulisci</span>
             </button>
             <div class="spacer"></div>
             <span id="validationMsg" class="muted"></span>
           </div>
         </div>
 
+        <!-- Stato connettori (sotto, secondaria) -->
+        <div class="card scan-overlay">
+          <div class="row-flex" style="justify-content: space-between; margin-bottom: 12px;">
+            <div>
+              <div class="section-eyebrow" data-i18n="connectors.eyebrow">Connector Mesh</div>
+              <h3 style="margin-bottom: 0;" data-i18n="connectors.title">Stato connettori</h3>
+            </div>
+            <span class="muted" style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;" id="meshStatus" data-i18n="connectors.monitoring">monitoring</span>
+          </div>
+          <div class="svc-status-grid" id="svcStatusGrid"></div>
+        </div>
+
         <div class="card">
-          <h3 style="display:flex;align-items:center;gap:8px;"><i data-lucide="history"></i> Ricerche recenti</h3>
-          <div id="recentChips" class="recent-chips"><span class="muted">Nessuna ricerca eseguita.</span></div>
+          <h3 style="display:flex;align-items:center;gap:8px;"><i data-lucide="history"></i> <span data-i18n="search.recent">Ricerche recenti</span></h3>
+          <div id="recentChips" class="recent-chips"><span class="muted" data-i18n="search.recent.empty">Nessuna ricerca eseguita.</span></div>
         </div>
       </section>
 
       <!-- ========== RESULTS ========== -->
       <section class="section" id="section-results">
         <div class="section-header">
-          <div class="section-eyebrow">Aggregated Output</div>
-          <h1>Risultati <span style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">unificati</span></h1>
-          <p>Correlazione cross-source da tutti i connettori OSINT con analisi AI generata da Claude.</p>
+          <div class="section-eyebrow" data-i18n="results.eyebrow">Aggregated Output</div>
+          <h1><span data-i18n="results.title.before">Risultati </span><span style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;" data-i18n="results.title.gradient">unificati</span></h1>
+          <p data-i18n="results.subtitle">Correlazione cross-source da tutti i connettori OSINT con analisi AI generata da Claude.</p>
         </div>
         <div id="resultsContainer">
           <div class="card" style="padding: 0; overflow: hidden;">
             <div class="empty" style="padding: 80px 20px;">
               <div class="empty-icon"><i data-lucide="radar" style="width:32px;height:32px;color:var(--accent);"></i></div>
-              <h3>Nessuna ricerca attiva</h3>
-              <p style="max-width: 360px; margin: 0 auto;">Apri <a href="#search">Ricerca</a>, inserisci una keyword e premi Avvia. I risultati aggregati appariranno qui con un report Intelligence generato da Claude.</p>
+              <h3 data-i18n="results.empty.title">Nessuna ricerca attiva</h3>
+              <p style="max-width: 360px; margin: 0 auto;" data-i18n="results.empty.body">Apri Ricerca, inserisci una keyword e premi Avvia. I risultati aggregati appariranno qui con un report Intelligence generato da Claude.</p>
             </div>
           </div>
         </div>
@@ -1228,9 +1460,9 @@ input, select, textarea { font-family: inherit; }
       <!-- ========== LIMITS ========== -->
       <section class="section" id="section-limits">
         <div class="section-header">
-          <div class="section-eyebrow">Quota Monitor</div>
-          <h1>Rate Limits <span style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">& Quote</span></h1>
-          <p>Monitor in tempo reale dell'utilizzo di ogni connettore. I contatori si resettano al reload.</p>
+          <div class="section-eyebrow" data-i18n="limits.eyebrow">Quota Monitor</div>
+          <h1><span data-i18n="limits.title.before">Rate Limits </span><span style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;" data-i18n="limits.title.gradient">& Quote</span></h1>
+          <p data-i18n="limits.subtitle">Monitor in tempo reale dell'utilizzo di ogni connettore. I contatori si resettano al reload.</p>
         </div>
         <div class="kpi-grid" id="kpiGrid"></div>
         <div class="card" style="padding: 0; overflow:hidden;">
@@ -1254,9 +1486,9 @@ input, select, textarea { font-family: inherit; }
       <!-- ========== CONFIG ========== -->
       <section class="section" id="section-config">
         <div class="section-header">
-          <div class="section-eyebrow">Setup</div>
-          <h1>Configurazione <span style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">API Keys</span></h1>
-          <p>Le chiavi sono <strong>cifrate (AES-GCM 256)</strong> in localStorage usando la tua Master Key come passphrase. Si ripristinano al login successivo. Senza la Master Key corretta non sono leggibili.</p>
+          <div class="section-eyebrow" data-i18n="config.eyebrow">Setup</div>
+          <h1><span data-i18n="config.title.before">Configurazione </span><span style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;" data-i18n="config.title.gradient">API Keys</span></h1>
+          <p data-i18n="config.subtitle">Le chiavi sono cifrate (AES-GCM 256) in localStorage usando la tua Master Key come passphrase. Si ripristinano al login successivo. Senza la Master Key corretta non sono leggibili.</p>
         </div>
 
         <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap: 16px; flex-wrap: wrap;">
@@ -1490,13 +1722,15 @@ app.listen(PORT, () => console.log('IntelHub proxy on ' + PORT));</pre>
    IDENTITY INTELLIGENCE HUB — Application Logic
    ==================================================== */
 
-// Default master key SHA-256 hash (corresponds to "iihub-demo-key")
-// To change: compute SHA-256 of your chosen key and replace below.
-const MASTER_KEY_HASH = '7e0a7c6e19f7a7b1f8d40b9b9d36e0a3a1b3a3e0b9c8e6e3a1c4f2b7d9e3a2c1';
+// SHA-256 hash della Master Key "Id3ntity@1312Int3ll1g3nc3!"
+// Per cambiarla: calcola SHA-256 della tua chiave (es. echo -n 'tua-key' | sha256sum) e sostituisci sotto.
+const MASTER_KEY_HASH = '088d58ad29ea0ccaa6b23c51ad06013028d4798c9d8e5a263ea584ccd5a5ed2f';
 
-// Recompute on first load: actual hash of "iihub-demo-key"
-// NOTE: At runtime, if MASTER_KEY_HASH is the placeholder, we accept any non-empty key matching the demo.
-let DEMO_FALLBACK = true;
+// In produzione: false. Solo se true accetta qualsiasi chiave ≥4 char (per test/demo).
+let DEMO_FALLBACK = false;
+
+// Email per recovery Master Key (mailto link nel modal di login)
+const RECOVERY_EMAIL = 'samuel.ascone@gmail.com';
 
 // In-memory state
 const state = {
@@ -1563,6 +1797,191 @@ const TYPE_TO_SERVICES = {
   url:      ['intelx','leakix'],
   password: ['hibp']
 };
+
+/* ============ i18n ============ */
+const I18N = {
+  en: {
+    'nav.operations': 'Operations',
+    'nav.search': 'Search',
+    'nav.results': 'Results',
+    'nav.system': 'System',
+    'nav.limits': 'Rate Limits',
+    'nav.config': 'Configuration',
+    'topbar.allOk': 'All services operational',
+    'topbar.search': 'Search',
+    'topbar.results': 'Results',
+    'topbar.limits': 'Rate Limits',
+    'topbar.config': 'Configuration',
+    'login.title': 'Intel-Hub',
+    'login.sub': 'Identity Intelligence Hub',
+    'login.subtitle': 'Enter your Master API Key to access the platform',
+    'login.label': 'Master API Key',
+    'login.btn': 'Sign In',
+    'login.invalid': 'Invalid key. Try again.',
+    'login.disclaimer': 'Service API Keys are encrypted (AES-GCM) in localStorage with the Master Key as passphrase. Persisted across sessions. Master Key and results are never saved.',
+    'login.forgot': 'Forgot Master Key?',
+    'hero.eyebrow': 'Live Intelligence Console',
+    'hero.title.before': 'Aggregate ',
+    'hero.title.gradient': 'Identity Intelligence',
+    'hero.title.after': ' from OSINT in real time',
+    'hero.subtitle': 'Run a single query and correlate results from IntelX, HIBP, BreachDirectory and LeakIX. Automatic analysis powered by Claude.',
+    'stat.queries': 'Session Queries',
+    'stat.queries.sub': 'in-memory',
+    'stat.active': 'Active Connectors',
+    'stat.active.sub': '/ 4 available',
+    'stat.hits': 'Total Hits',
+    'stat.hits.sub': 'leak + breach',
+    'stat.latency': 'Avg Latency',
+    'stat.latency.sub': 'via proxy',
+    'search.eyebrow': 'Query Builder',
+    'search.title': 'Run an OSINT search',
+    'search.kw': 'Keyword',
+    'search.kw.placeholder': 'e.g. mario.rossi@example.com',
+    'search.type': 'Type',
+    'search.type.email': 'Email',
+    'search.type.name': 'Name/Surname',
+    'search.type.phone': 'Phone',
+    'search.type.domain': 'Domain',
+    'search.type.ip': 'IP',
+    'search.type.url': 'URL',
+    'search.type.password': 'Password',
+    'search.services': 'Active services',
+    'search.run': 'Run Search',
+    'search.running': 'Searching...',
+    'search.clear': 'Clear',
+    'search.recent': 'Recent searches',
+    'search.recent.empty': 'No searches yet.',
+    'connectors.eyebrow': 'Connector Mesh',
+    'connectors.title': 'Connectors status',
+    'connectors.monitoring': 'monitoring',
+    'connectors.pill.ready': 'READY',
+    'connectors.pill.notset': 'NOT SET',
+    'connectors.pill.paid': 'PAID',
+    'connectors.pill.noauth': 'NO AUTH',
+    'results.eyebrow': 'Aggregated Output',
+    'results.title.before': 'Unified ',
+    'results.title.gradient': 'results',
+    'results.subtitle': 'Cross-source correlation from all OSINT connectors with AI analysis powered by Claude.',
+    'results.empty.title': 'No active search',
+    'results.empty.body': 'Open Search, enter a keyword and hit Run. Aggregated results will appear here with an Intelligence report from Claude.',
+    'limits.eyebrow': 'Quota Monitor',
+    'limits.title.before': 'Rate Limits ',
+    'limits.title.gradient': '& Quotas',
+    'limits.subtitle': 'Real-time monitoring of each connector usage. Counters reset on reload.',
+    'config.eyebrow': 'Setup',
+    'config.title.before': 'API Keys ',
+    'config.title.gradient': 'Configuration',
+    'config.subtitle': 'API keys are encrypted (AES-GCM 256) in localStorage using your Master Key as passphrase. Restored on next login. Without the correct Master Key they cannot be read.',
+    'lang.it': 'Italiano',
+    'lang.en': 'English'
+  },
+  it: {
+    'nav.operations': 'Operations',
+    'nav.search': 'Ricerca',
+    'nav.results': 'Risultati',
+    'nav.system': 'System',
+    'nav.limits': 'Rate Limits',
+    'nav.config': 'Configurazione',
+    'topbar.allOk': 'Tutti i servizi operativi',
+    'topbar.search': 'Ricerca',
+    'topbar.results': 'Risultati',
+    'topbar.limits': 'Rate Limits',
+    'topbar.config': 'Configurazione',
+    'login.title': 'Intel-Hub',
+    'login.sub': 'Identity Intelligence Hub',
+    'login.subtitle': 'Inserisci la tua Master API Key per accedere alla piattaforma',
+    'login.label': 'Master API Key',
+    'login.btn': 'Accedi',
+    'login.invalid': 'Chiave non valida. Riprova.',
+    'login.disclaimer': 'Le API Key dei servizi sono cifrate (AES-GCM) in localStorage con la Master Key come passphrase. Persistite tra sessioni. Master Key e risultati non vengono mai salvati.',
+    'login.forgot': 'Master Key dimenticata?',
+    'hero.eyebrow': 'Live Intelligence Console',
+    'hero.title.before': 'Aggrega ',
+    'hero.title.gradient': 'Identity Intelligence',
+    'hero.title.after': ' da OSINT in tempo reale',
+    'hero.subtitle': "Esegui un'unica query e correla i risultati da IntelX, HIBP, BreachDirectory e LeakIX. Analisi automatica generata da Claude.",
+    'stat.queries': 'Query Sessione',
+    'stat.queries.sub': 'in-memory',
+    'stat.active': 'Connettori Attivi',
+    'stat.active.sub': '/ 4 disponibili',
+    'stat.hits': 'Hit Totali',
+    'stat.hits.sub': 'leak + breach',
+    'stat.latency': 'Avg Latency',
+    'stat.latency.sub': 'via proxy',
+    'search.eyebrow': 'Query Builder',
+    'search.title': 'Esegui una ricerca OSINT',
+    'search.kw': 'Keyword',
+    'search.kw.placeholder': 'es. mario.rossi@example.com',
+    'search.type': 'Tipo',
+    'search.type.email': 'Email',
+    'search.type.name': 'Nome/Cognome',
+    'search.type.phone': 'Telefono',
+    'search.type.domain': 'Dominio',
+    'search.type.ip': 'IP',
+    'search.type.url': 'URL',
+    'search.type.password': 'Password',
+    'search.services': 'Servizi attivi',
+    'search.run': 'Avvia Ricerca',
+    'search.running': 'Ricerca in corso...',
+    'search.clear': 'Pulisci',
+    'search.recent': 'Ricerche recenti',
+    'search.recent.empty': 'Nessuna ricerca eseguita.',
+    'connectors.eyebrow': 'Connector Mesh',
+    'connectors.title': 'Stato connettori',
+    'connectors.monitoring': 'monitoring',
+    'connectors.pill.ready': 'READY',
+    'connectors.pill.notset': 'NOT SET',
+    'connectors.pill.paid': 'PAID',
+    'connectors.pill.noauth': 'NO AUTH',
+    'results.eyebrow': 'Aggregated Output',
+    'results.title.before': 'Risultati ',
+    'results.title.gradient': 'unificati',
+    'results.subtitle': 'Correlazione cross-source da tutti i connettori OSINT con analisi AI generata da Claude.',
+    'results.empty.title': 'Nessuna ricerca attiva',
+    'results.empty.body': 'Apri Ricerca, inserisci una keyword e premi Avvia. I risultati aggregati appariranno qui con un report Intelligence generato da Claude.',
+    'limits.eyebrow': 'Quota Monitor',
+    'limits.title.before': 'Rate Limits ',
+    'limits.title.gradient': '& Quote',
+    'limits.subtitle': "Monitor in tempo reale dell'utilizzo di ogni connettore. I contatori si resettano al reload.",
+    'config.eyebrow': 'Setup',
+    'config.title.before': 'Configurazione ',
+    'config.title.gradient': 'API Keys',
+    'config.subtitle': 'Le chiavi sono cifrate (AES-GCM 256) in localStorage usando la tua Master Key come passphrase. Si ripristinano al login successivo. Senza la Master Key corretta non sono leggibili.',
+    'lang.it': 'Italiano',
+    'lang.en': 'English'
+  }
+};
+
+let currentLang = (localStorage.getItem('intelhub-lang') === 'it') ? 'it' : 'en';
+function t(key) { return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key; }
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    el.textContent = t(k);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.dataset.i18nHtml;
+    el.innerHTML = t(k);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const k = el.dataset.i18nPlaceholder;
+    el.placeholder = t(k);
+  });
+  document.documentElement.lang = currentLang;
+}
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('intelhub-lang', lang);
+  applyTranslations();
+  // Re-render dynamic content that depends on language
+  if (state.authSession) {
+    renderRecent();
+    if ($('#svcStatusGrid')) renderServiceStatusGrid();
+    if ($('#serviceChecks')) renderServiceChecks();
+    const route = location.hash.slice(1) || 'search';
+    $('#routeTitle').textContent = t('topbar.' + route);
+  }
+}
 
 /* ============ Utilities ============ */
 async function sha256(str) {
@@ -1922,10 +2341,10 @@ function renderServiceStatusGrid() {
   Object.entries(SERVICES).forEach(([id, svc]) => {
     const ok = isServiceConfigured(id);
     let pill, pillClass;
-    if (svc.paidOnly) { pill = 'PAID'; pillClass = 'pill-paid'; }
-    else if (id === 'hibp') { pill = 'NO AUTH'; pillClass = 'pill-ok'; }
-    else if (ok) { pill = 'READY'; pillClass = 'pill-ok'; }
-    else { pill = 'NOT SET'; pillClass = 'pill-warn'; }
+    if (svc.paidOnly) { pill = t('connectors.pill.paid'); pillClass = 'pill-paid'; }
+    else if (id === 'hibp') { pill = t('connectors.pill.noauth'); pillClass = 'pill-ok'; }
+    else if (ok) { pill = t('connectors.pill.ready'); pillClass = 'pill-ok'; }
+    else { pill = t('connectors.pill.notset'); pillClass = 'pill-warn'; }
     const card = document.createElement('div');
     card.className = 'svc-status-card';
     card.innerHTML = `
@@ -2421,8 +2840,7 @@ function setRoute(name) {
   const sec = $('#section-' + name);
   if (sec) sec.classList.add('active');
   $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.route === name));
-  const titles = { search: 'Ricerca', results: 'Risultati', limits: 'Rate Limits', config: 'Configurazione' };
-  $('#routeTitle').textContent = titles[name] || name;
+  $('#routeTitle').textContent = t('topbar.' + name) || name;
   if (name === 'limits') renderLimits();
   if (name === 'config') renderConfigForm();
   if (name === 'search') {
@@ -2532,7 +2950,7 @@ async function triggerSearch() {
 
   const btn = $('#searchBtn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Ricerca in corso...';
+  btn.innerHTML = `<span class="spinner"></span> ${t('search.running')}`;
   location.hash = '#results';
   $('#resultsContainer').innerHTML = `
     <div class="card">
@@ -2556,13 +2974,32 @@ async function triggerSearch() {
   renderResults(payload);
 
   btn.disabled = false;
-  btn.innerHTML = '<i data-lucide="search"></i> Avvia Ricerca';
+  btn.innerHTML = `<i data-lucide="search"></i> <span data-i18n="search.run">${t('search.run')}</span>`;
   lucide.createIcons();
 }
 
 /* ============ Init ============ */
 async function init() {
+  // Apply default language first so all static labels render correctly
+  applyTranslations();
   lucide.createIcons();
+
+  // Language switcher
+  $$('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === currentLang);
+    b.onclick = () => {
+      $$('.lang-btn').forEach(x => x.classList.toggle('active', x === b));
+      setLang(b.dataset.lang);
+    };
+  });
+
+  // Forgot Master Key — apre mailto
+  $('#forgotKeyLink').onclick = e => {
+    e.preventDefault();
+    const subject = encodeURIComponent('Intel-Hub — Master Key recovery');
+    const body = encodeURIComponent('Ciao Samuel,\n\nho dimenticato la Master Key di accesso a Intel-Hub.\n\nGrazie,\n');
+    window.location.href = `mailto:${RECOVERY_EMAIL}?subject=${subject}&body=${body}`;
+  };
 
   // Login modal events
   $('#loginBtn').onclick = login;
