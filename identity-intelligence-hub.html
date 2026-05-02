@@ -3,14 +3,39 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+  style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com;
+  font-src 'self' https://api.fontshare.com https://fonts.gstatic.com data:;
+  img-src 'self' data: blob:;
+  connect-src 'self'
+    https://api.anthropic.com
+    https://api.pwnedpasswords.com
+    https://2.intelx.io
+    https://free.intelx.io
+    https://breachdirectory.p.rapidapi.com
+    https://leakix.net
+    https://api.dehashed.com
+    https://*.workers.dev
+    https://*.onrender.com
+    https://corsproxy.io
+    https://api.allorigins.win;
+  frame-ancestors 'none';
+  base-uri 'self';
+  form-action 'none';
+" />
 <title>Intel-Hub — Identity Intelligence Hub</title>
 <link rel="preconnect" href="https://api.fontshare.com" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!-- Pinned CDN versions (replace 'sha384-XXX' with real SRI from https://www.srihash.org after deploy) -->
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js" crossorigin="anonymous"></script>
 <style>
 /* ========== INTEL-HUB DESIGN SYSTEM ========== */
 :root[data-theme="dark"] {
@@ -1506,9 +1531,9 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v2.4</span>
+        <span>v2.5</span>
         <span class="version-sep">·</span>
-        <span>Sakura</span>
+        <span>hardened</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
         OSINT · CTI · BREACH-DATA
@@ -2078,7 +2103,12 @@ input, select, textarea { font-family: inherit; }
             <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.84rem;" id="persistStatus">○ Not saved</div>
             <div class="muted" style="font-size: 0.78rem; margin-top: 4px;"><span data-i18n="persist.storageInfo">Storage: </span><code>localStorage[intelhub-config-v1]</code><span data-i18n="persist.encryptedWith"> · encrypted with PBKDF2(120k) + AES-GCM</span></div>
           </div>
-          <button class="btn btn-ghost btn-sm" id="clearStoredBtn"><i data-lucide="trash-2"></i> <span data-i18n="persist.clearBtn">Clear stored configuration</span></button>
+          <div class="row-flex" style="gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-ghost btn-sm" id="exportBackupBtn"><i data-lucide="download"></i> <span data-i18n="persist.exportBtn">Export encrypted backup</span></button>
+            <button class="btn btn-ghost btn-sm" id="importBackupBtn"><i data-lucide="upload"></i> <span data-i18n="persist.importBtn">Import backup</span></button>
+            <button class="btn btn-ghost btn-sm" id="clearStoredBtn" style="color: var(--danger);"><i data-lucide="trash-2"></i> <span data-i18n="persist.clearBtn">Clear stored configuration</span></button>
+            <input type="file" id="importBackupFile" accept="application/json,.json" style="display:none" />
+          </div>
         </div>
 
         <div class="warning-box">
@@ -2301,9 +2331,10 @@ app.listen(PORT, () => console.log('IntelHub proxy on ' + PORT));</pre>
    IDENTITY INTELLIGENCE HUB — Application Logic
    ==================================================== */
 
-// SHA-256 hash della Master Key "Id3nt1ty@1312Int3ll1g3nc3!"
-// Per cambiarla: calcola SHA-256 della tua chiave (es. echo -n 'tua-key' | sha256sum) e sostituisci sotto.
-const MASTER_KEY_HASH = '87ca89c470b18dff85b38ac815ed3eeb3ff74fe4345bf2605734088feb540066';
+// SHA-256 hash della Master Key "kiTxuaRmK0WHCc4j1JDem57xSPsJ0Fld"
+// Master Key generata randomicamente (32 char base64) e da custodire nel vault condiviso del SOC (es. Bitwarden).
+// Per cambiarla: calcola SHA-256 della nuova chiave (es. echo -n 'nuova-key' | sha256sum) e sostituisci sotto.
+const MASTER_KEY_HASH = '1419ad02684cb5c52dca2b1b5157337471458952b0292765dda232cb42ba7651';
 
 // In produzione: false. Solo se true accetta qualsiasi chiave ≥4 char (per test/demo).
 let DEMO_FALLBACK = false;
@@ -2514,6 +2545,13 @@ const I18N = {
     'persist.clearBtn': 'Clear stored configuration',
     'persist.clearConfirm': 'Clear encrypted keys saved in localStorage?\n\nYou will need to re-enter them at next login.',
     'persist.cleared': 'Encrypted configuration cleared.',
+    'persist.exportBtn': 'Export encrypted backup',
+    'persist.importBtn': 'Import backup',
+    'persist.exportEmpty': 'Nothing to export yet — enter at least one config first.',
+    'persist.exportOk': 'Backup file downloaded.',
+    'persist.importPick': 'Pick a backup file (.intelhub-backup.json)',
+    'persist.importOk': 'Backup imported. Reload the page and login with the same Master Key used to create it.',
+    'persist.importErr': 'Invalid or corrupted backup file.',
     'cors.title': 'CORS Proxy (optional but recommended)',
     'cors.desc.html': 'Most OSINT providers (LeakIX, BreachDirectory, IntelX, DeHashed) <strong>do not allow direct calls from the browser</strong> due to CORS policies. Configure a proxy to forward the requests. Public examples: <code>https://corsproxy.io/?</code>, <code>https://api.allorigins.win/raw?url=</code>. For real use, deploy your own proxy (Cloudflare Worker, Nginx, etc.).',
     'cors.publicWarn.bold': 'Public proxies limit:',
@@ -2724,6 +2762,13 @@ const I18N = {
     'persist.clearBtn': 'Cancella configurazione salvata',
     'persist.clearConfirm': 'Cancellare le chiavi cifrate salvate in localStorage?\n\nDovrai re-immetterle al prossimo login.',
     'persist.cleared': 'Configurazione cifrata cancellata.',
+    'persist.exportBtn': 'Esporta backup cifrato',
+    'persist.importBtn': 'Importa backup',
+    'persist.exportEmpty': 'Niente da esportare ancora — configura almeno una chiave prima.',
+    'persist.exportOk': 'File di backup scaricato.',
+    'persist.importPick': 'Scegli file di backup (.intelhub-backup.json)',
+    'persist.importOk': 'Backup importato. Ricarica la pagina ed effettua il login con la stessa Master Key usata per crearlo.',
+    'persist.importErr': 'File di backup non valido o corrotto.',
     'cors.title': 'CORS Proxy (opzionale ma consigliato)',
     'cors.desc.html': 'La maggior parte dei provider OSINT (LeakIX, BreachDirectory, IntelX, DeHashed) <strong>non consente chiamate dirette dal browser</strong> per via delle policy CORS. Configura un proxy per inoltrare le richieste. Esempi pubblici: <code>https://corsproxy.io/?</code>, <code>https://api.allorigins.win/raw?url=</code>. Per uso reale, deploya un proxy tuo (Cloudflare Worker, Nginx, etc.).',
     'cors.publicWarn.bold': 'Limite proxy pubblici:',
@@ -2894,13 +2939,16 @@ async function sha1(str) {
 
 /* ============ Encrypted persistence ============ */
 const STORAGE_KEY = 'intelhub-config-v1';
+// PBKDF2 iter count by blob version. v=1 legacy (120k), v=2 hardened (600k).
+const PBKDF2_ITER = { 1: 120000, 2: 600000 };
+const CURRENT_BLOB_VERSION = 2;
 
-async function deriveKey(passphrase, salt) {
+async function deriveKey(passphrase, salt, iterations) {
   const km = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']
   );
   return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: 120000, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
     km,
     { name: 'AES-GCM', length: 256 },
     false, ['encrypt', 'decrypt']
@@ -2910,18 +2958,26 @@ async function deriveKey(passphrase, salt) {
 async function encryptBlob(passphrase, payload) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const key = await deriveKey(passphrase, salt);
+  const iter = PBKDF2_ITER[CURRENT_BLOB_VERSION];
+  const key = await deriveKey(passphrase, salt, iter);
   const ct = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(payload))
   );
-  return { v: 1, s: btoa(String.fromCharCode(...salt)), i: btoa(String.fromCharCode(...iv)), c: btoa(String.fromCharCode(...new Uint8Array(ct))) };
+  return {
+    v: CURRENT_BLOB_VERSION,
+    s: btoa(String.fromCharCode(...salt)),
+    i: btoa(String.fromCharCode(...iv)),
+    c: btoa(String.fromCharCode(...new Uint8Array(ct)))
+  };
 }
 
 async function decryptBlob(passphrase, blob) {
+  const v = blob.v || 1;
+  const iter = PBKDF2_ITER[v] || PBKDF2_ITER[CURRENT_BLOB_VERSION];
   const salt = Uint8Array.from(atob(blob.s), c => c.charCodeAt(0));
   const iv = Uint8Array.from(atob(blob.i), c => c.charCodeAt(0));
   const ct = Uint8Array.from(atob(blob.c), c => c.charCodeAt(0));
-  const key = await deriveKey(passphrase, salt);
+  const key = await deriveKey(passphrase, salt, iter);
   const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
   return JSON.parse(new TextDecoder().decode(pt));
 }
@@ -3004,6 +3060,19 @@ function updatePersistStatus() {
 
 function $(sel, root = document) { return root.querySelector(sel); }
 function $$(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
+
+// Sanitize markdown output before injecting in DOM (defense vs prompt injection / XSS via Claude output)
+function renderMarkdownSafe(md) {
+  const html = marked.parse(md, { breaks: true });
+  if (typeof DOMPurify !== 'undefined') {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p','br','strong','em','code','pre','ul','ol','li','h1','h2','h3','h4','h5','h6','blockquote','a','table','thead','tbody','tr','th','td','hr','span'],
+      ALLOWED_ATTR: ['href','title','class'],
+      ALLOWED_URI_REGEXP: /^(?:https?|mailto):/i
+    });
+  }
+  return html;
+}
 
 function toast(msg, type = 'info') {
   const c = $('#toastContainer');
@@ -3605,7 +3674,7 @@ async function loadAIForEntry(id, force = false) {
   if (!c) return;
   // Se già caricato in cache, mostra subito (no re-fetch)
   if (entry.aiAnalysis) {
-    c.innerHTML = marked.parse(entry.aiAnalysis);
+    c.innerHTML = renderMarkdownSafe(entry.aiAnalysis);
     return;
   }
   if (entry.aiLoading) return;
@@ -3653,7 +3722,7 @@ async function loadAIForEntry(id, force = false) {
     return;
   }
   entry.aiAnalysis = out.text;
-  c2.innerHTML = marked.parse(out.text);
+  c2.innerHTML = renderMarkdownSafe(out.text);
   schedulePersist();
 }
 
@@ -4044,6 +4113,44 @@ function renderConfigForm() {
     updatePersistStatus();
     toast(t('persist.cleared'), 'success');
   };
+  const exportBackupBtn = $('#exportBackupBtn');
+  if (exportBackupBtn) exportBackupBtn.onclick = () => {
+    const blob = localStorage.getItem(STORAGE_KEY);
+    if (!blob) { toast(t('persist.exportEmpty'), 'warning'); return; }
+    const file = new Blob([blob], { type: 'application/json' });
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    a.href = url;
+    a.download = `intelhub-backup-${ts}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast(t('persist.exportOk'), 'success');
+  };
+  const importBackupBtn = $('#importBackupBtn');
+  const importFile = $('#importBackupFile');
+  if (importBackupBtn && importFile) {
+    importBackupBtn.onclick = () => importFile.click();
+    importFile.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const txt = await file.text();
+        // Validazione minima: deve essere un blob {v,s,i,c}
+        const obj = JSON.parse(txt);
+        if (!obj.s || !obj.i || !obj.c) throw new Error('shape');
+        localStorage.setItem(STORAGE_KEY, txt);
+        toast(t('persist.importOk'), 'success');
+        setTimeout(() => location.reload(), 1500);
+      } catch (err) {
+        toast(t('persist.importErr'), 'error');
+      } finally {
+        importFile.value = '';
+      }
+    };
+  }
 
   updateConfigStatuses();
   lucide.createIcons();
