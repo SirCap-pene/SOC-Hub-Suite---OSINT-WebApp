@@ -2341,7 +2341,7 @@ app.listen(PORT, () => console.log('IntelHub proxy on ' + PORT));</pre>
           </div>
           <div id="bundleOutput" style="display:none; margin-top: 14px;">
             <p class="muted" style="font-size: 0.82rem; margin-bottom: 6px;" data-i18n="bundle.instructions">
-              const BUNDLED_CONFIG_BLOB = {"v":2,"s":"/2ESMHu+oFLiJo6MlN7vYw==","i":"fPjJIJDeSNF2EBdR","c":"eFpm6M8f5LQ6vuMO0LBnQ5Sd4wxgXj5kp3EggWdiaKR2FRrHM7Rk6ARAgHUYsw10Vc7YaazprXzg6X5ARcjx9RBZJ/CvqnIcNJ/QNeQmsxrt87294uxEVcKyyOnkCRlWno2Uk7tCucF1kPYwHdlwJkRkt2rMLfPS9k4u0192VMzJuVSRp4QcwitlyVvyjQpior/CzyP6W7XvCNqOB/JoeefujAXsJrnKhK44h185dYV6dFfCEQ2ge/R7EhtICzyeDeGrHt2VRCItM4dLvdWZMOB4DZdn8MTlqM2qPV4mjtT07y8BeBPyKWH+w43wbX/ctGxGdy0IbqyM7fPlUzlgEsLGQKqwJkBRnTCh23M3DkXIjfnva/vdsxsaVxJEllk/DM7WTkCu2/hws7piDXJjwX06qITRpE/8udjVeAVxb98PkxPoWWviSUPs0AzQP0hNrjjtTg7tdRVFZ93TVNNS00+VQkXp/LCUzUT3SLtawChgQqj/o2/PqbRHxKHIrXfZAnq6vL3P8syUsM6usPuXlL331lcruVra/pQTuJABovizf80M+aHw1ydMx/JR94HKYuoZ8wqEeljsssnS6VSl7RY0xFbxRXJK1g=="};
+              Copy the line below, replace the <code>const BUNDLED_CONFIG_BLOB = null;</code> line in <code>identity-intelligence-hub.html</code>, then commit & push. Cloudflare Pages will redeploy in ~30s.
             </p>
             <textarea id="bundleText" readonly rows="4" style="width:100%; font-family:'JetBrains Mono',monospace; font-size:0.72rem; background:var(--bg-2); border:1px solid var(--border); border-radius:8px; padding:10px; color:var(--text-1); resize:vertical;"></textarea>
             <div class="row-flex" style="margin-top: 8px;">
@@ -2402,7 +2402,7 @@ const RECOVERY_EMAIL = 'samuel.ascone@gmail.com';
 // then committed here. Decrypted only with the right Master Key.
 // Per-user data (history, recent) stays in localStorage only.
 // Set to null to disable bundled config (require manual import).
-const BUNDLED_CONFIG_BLOB = null;
+const BUNDLED_CONFIG_BLOB = {"v":2,"s":"/2ESMHu+oFLiJo6MlN7vYw==","i":"fPjJIJDeSNF2EBdR","c":"eFpm6M8f5LQ6vuMO0LBnQ5Sd4wxgXj5kp3EggWdiaKR2FRrHM7Rk6ARAgHUYsw10Vc7YaazprXzg6X5ARcjx9RBZJ/CvqnIcNJ/QNeQmsxrt87294uxEVcKyyOnkCRlWno2Uk7tCucF1kPYwHdlwJkRkt2rMLfPS9k4u0192VMzJuVSRp4QcwitlyVvyjQpior/CzyP6W7XvCNqOB/JoeefujAXsJrnKhK44h185dYV6dFfCEQ2ge/R7EhtICzyeDeGrHt2VRCItM4dLvdWZMOB4DZdn8MTlqM2qPV4mjtT07y8BeBPyKWH+w43wbX/ctGxGdy0IbqyM7fPlUzlgEsLGQKqwJkBRnTCh23M3DkXIjfnva/vdsxsaVxJEllk/DM7WTkCu2/hws7piDXJjwX06qITRpE/8udjVeAVxb98PkxPoWWviSUPs0AzQP0hNrjjtTg7tdRVFZ93TVNNS00+VQkXp/LCUzUT3SLtawChgQqj/o2/PqbRHxKHIrXfZAnq6vL3P8syUsM6usPuXlL331lcruVra/pQTuJABovizf80M+aHw1ydMx/JR94HKYuoZ8wqEeljsssnS6VSl7RY0xFbxRXJK1g=="};
 
 // In-memory state
 const state = {
