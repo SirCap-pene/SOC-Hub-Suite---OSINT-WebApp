@@ -4454,21 +4454,32 @@ async function fetchProviderQuotas() {
   if (state.quotasFetching) return;
   state.quotasFetching = true;
   const tasks = [];
+
   if (state.apiKeys.intelx) {
     tasks.push((async () => {
       try {
-        const base = state.intelxTier === 'paid' ? 'https://2.intelx.io' : 'https://free.intelx.io';
-        const r = await fetchTimeout(proxied(`${base}/authenticate/info`), { headers: { 'x-key': state.apiKeys.intelx } }, 12000);
-             if (!r.ok) return;
-        const j = await r.json();
-        // IntelX response shape: 'Paths' uppercase OR 'paths' lowercase OR 'Limits' array fallback
+        const tryEndpoints = ['https://2.intelx.io/authenticate/info', 'https://free.intelx.io/authenticate/info'];
+        let j = null, fromUrl = null;
+        for (const url of tryEndpoints) {
+          try {
+            const r = await fetchTimeout(proxied(url), { headers: { 'x-key': state.apiKeys.intelx } }, 12000);
+            if (r.ok) { j = await r.json(); fromUrl = url; break; }
+            else { console.warn('[quota.intelx]', url, 'HTTP', r.status); }
+          } catch (e) { console.warn('[quota.intelx]', url, 'failed:', e.message); }
+        }
+        if (!j) { console.warn('[quota.intelx] all endpoints failed'); return; }
+        console.log('[quota.intelx] response from', fromUrl, ':', j);
         let used = null, limit = null;
-        const pathInfo = j.Paths?.['/intelligent/search'] || j.paths?.['/intelligent/search'];
-        if (pathInfo && typeof pathInfo.Credit === 'number' && typeof pathInfo.CreditMax === 'number') {
-          used = pathInfo.CreditMax - pathInfo.Credit;
-          limit = pathInfo.CreditMax;
-        } else if (Array.isArray(j.Limits)) {
-          const l = j.Limits.find(x => x.Path === '/intelligent/search' || x.Path === 'search');
+        const pathsObj = j.Paths || j.paths;
+        if (pathsObj && pathsObj['/intelligent/search']) {
+          const p = pathsObj['/intelligent/search'];
+          if (typeof p.Credit === 'number' && typeof p.CreditMax === 'number') {
+            used = p.CreditMax - p.Credit;
+            limit = p.CreditMax;
+          }
+        }
+        if (limit === null && Array.isArray(j.Limits)) {
+          const l = j.Limits.find(x => x.Path === '/intelligent/search');
           if (l && typeof l.Credit === 'number' && typeof l.CreditMax === 'number') {
             used = l.CreditMax - l.Credit;
             limit = l.CreditMax;
@@ -4476,14 +4487,16 @@ async function fetchProviderQuotas() {
         }
         if (used !== null && limit !== null) {
           state.quotas.intelx = { used, limit, resetAt: null, source: 'api' };
-        }
-      } catch (e) {}
+        } else { console.warn('[quota.intelx] could not parse credit/creditMax from', j); }
+      } catch (e) { console.warn('[quota.intelx] exception:', e); }
     })());
   }
+
   state.quotas.hibp = { used: state.rateUsage.hibp || 0, limit: Infinity, source: 'unlimited' };
   await Promise.allSettled(tasks);
   state.quotasFetchedAt = Date.now();
   state.quotasFetching = false;
+  console.log('[quotas] final:', state.quotas);
 }
 
 async function refreshQuotasUI() {
