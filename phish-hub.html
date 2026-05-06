@@ -2171,14 +2171,13 @@ input, select, textarea { font-family: inherit; }
         <div class="section-header">
           <div class="section-eyebrow" data-i18n="limits.eyebrow">Quota Monitor</div>
           <h1><span data-i18n="limits.title.before">Rate Limits </span><span style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;" data-i18n="limits.title.gradient">& Quote</span></h1>
-          <p data-i18n="limits.subtitle">Monitor in tempo reale dell'utilizzo di ogni connettore. I contatori si resettano al reload.</p>
-                  </p>
+           <p data-i18n="limits.subtitle">Monitor in tempo reale dell'utilizzo di ogni connettore. I contatori si resettano al reload.</p>
           <div class="row-flex no-print" style="margin-top: 14px; gap: 10px; align-items: center;">
             <button class="btn btn-primary btn-sm" id="refreshQuotasBtn"><i data-lucide="refresh-cw"></i> <span data-i18n="limits.refresh">Refresh quotas from providers</span></button>
             <span id="quotasStatus" class="muted mono" style="font-size: 0.78rem;"></span>
           </div>
         </div>
-        <div class="kpi-grid"
+        <div class="kpi-grid" id="kpiGrid"></div>
         <div class="card" style="padding: 0; overflow:hidden;">
           <table class="table">
             <thead>
