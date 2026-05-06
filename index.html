@@ -16,7 +16,9 @@
   --bg-0: #05070b;
   --bg-1: #0a0e15;
   --bg-2: #11161f;
+  --bg-3: #1a212d;
   --border: #1f2937;
+  --border-strong: #2f3a4a;
   --text-1: #eef2f7;
   --text-2: #aab5c2;
   --text-3: #6e7a89;
@@ -25,6 +27,9 @@
   --magenta: #f472b6;
   --crimson: #f43f5e;
   --amber: #fb923c;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
@@ -59,6 +64,152 @@ body::after {
   animation: drift 30s ease-in-out infinite alternate;
 }
 @keyframes drift { 0% { transform: translate(0,0); } 100% { transform: translate(20px,-10px); } }
+
+/* ============== LOGIN VIEW ============== */
+#loginView {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.login-card {
+  background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+}
+.login-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 18px;
+  padding: 1.5px;
+  background: linear-gradient(135deg, var(--teal), var(--indigo), var(--magenta));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.45;
+  pointer-events: none;
+}
+.login-logo {
+  width: 64px; height: 64px;
+  margin: 0 auto 20px;
+  display: grid; place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--teal), var(--indigo), var(--magenta));
+  box-shadow: 0 0 24px rgba(94, 234, 212, 0.3);
+}
+.login-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal);
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.login-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.login-title .grad {
+  background: linear-gradient(135deg, var(--teal) 0%, var(--indigo) 50%, var(--magenta) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.login-sub {
+  text-align: center;
+  color: var(--text-3);
+  font-size: 0.88rem;
+  margin-bottom: 28px;
+}
+.login-field { margin-bottom: 16px; }
+.login-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-2);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.login-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-1);
+  font-size: 0.95rem;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none;
+  transition: border 0.15s, box-shadow 0.15s;
+}
+.login-input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 18%, transparent);
+}
+.login-btn {
+  width: 100%;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, var(--teal), var(--indigo), var(--magenta));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin-top: 8px;
+}
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--teal) 35%, transparent);
+}
+.login-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.login-error {
+  display: none;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+  border-radius: 8px;
+  color: var(--text-1);
+  font-size: 0.84rem;
+}
+.login-error.show { display: block; }
+.login-disclaimer {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+.login-forgot {
+  display: block;
+  text-align: center;
+  margin-top: 14px;
+  font-size: 0.8rem;
+  color: var(--teal);
+  text-decoration: none;
+}
+.login-forgot:hover { text-decoration: underline; }
+
+/* ============== PORTAL (authed) ============== */
+#authedView { display: none; }
+#authedView.show { display: block; }
 .portal {
   position: relative;
   z-index: 1;
@@ -70,10 +221,7 @@ body::after {
   padding: 40px 24px;
   gap: 48px;
 }
-.portal-header {
-  text-align: center;
-  max-width: 720px;
-}
+.portal-header { text-align: center; max-width: 720px; }
 .brand-mark {
   display: inline-flex;
   align-items: center;
@@ -156,11 +304,9 @@ body::after {
 }
 .hub-card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
 .hub-card:hover::before { opacity: 1; }
-
 .hub-card.identity { --card-gradient: linear-gradient(135deg, var(--teal), var(--indigo), var(--magenta)); --card-icon-color: var(--teal); }
 .hub-card.phish    { --card-gradient: linear-gradient(135deg, var(--crimson), var(--amber), #fbbf24); --card-icon-color: var(--crimson); }
 .hub-card.future   { --card-gradient: linear-gradient(135deg, #6e7a89, #aab5c2); --card-icon-color: var(--text-3); opacity: 0.55; pointer-events: none; }
-
 .hub-icon {
   width: 56px; height: 56px;
   border-radius: 14px;
@@ -194,18 +340,8 @@ body::after {
   color: var(--card-icon-color);
   margin-bottom: 14px;
 }
-.hub-desc {
-  color: var(--text-2);
-  font-size: 0.92rem;
-  line-height: 1.55;
-  flex: 1;
-}
-.hub-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 16px;
-}
+.hub-desc { color: var(--text-2); font-size: 0.92rem; line-height: 1.55; flex: 1; }
+.hub-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
 .hub-tag {
   padding: 3px 9px;
   background: var(--bg-2);
@@ -213,7 +349,6 @@ body::after {
   border-radius: 999px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.62rem;
-  letter-spacing: 0.04em;
   color: var(--text-3);
 }
 .hub-cta {
@@ -237,10 +372,13 @@ body::after {
   letter-spacing: 0.06em;
   text-align: center;
 }
-.lang-switch {
+.portal-topbar {
   position: fixed;
-  top: 20px;
-  right: 24px;
+  top: 20px; right: 24px;
+  display: flex; align-items: center; gap: 10px;
+  z-index: 100;
+}
+.lang-switch {
   display: inline-flex;
   background: var(--bg-2);
   border: 1px solid var(--border);
@@ -262,94 +400,226 @@ body::after {
   transition: all 0.15s;
 }
 .lang-btn:hover { color: var(--text-1); }
-.lang-btn.active {
-  background: linear-gradient(135deg, var(--teal), var(--indigo));
-  color: #fff;
+.lang-btn.active { background: linear-gradient(135deg, var(--teal), var(--indigo)); color: #fff; }
+.logout-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text-2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.logout-btn:hover { color: var(--danger); border-color: var(--danger); }
+.session-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
+  border-radius: 9px;
+  color: var(--success);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.session-pill .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
 }
 </style>
 </head>
 <body>
 
-<div class="lang-switch">
-  <button class="lang-btn" data-lang="en">EN</button>
-  <button class="lang-btn" data-lang="it">IT</button>
+<!-- ============== LOGIN VIEW ============== -->
+<div id="loginView">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <circle cx="11" cy="11" r="3"/>
+        <line x1="13.5" y1="13.5" x2="16" y2="16"/>
+      </svg>
+    </div>
+    <div class="login-eyebrow" data-i18n="login.eyebrow">SOC HUB SUITE</div>
+    <h1 class="login-title"><span class="grad">SOC Hub</span></h1>
+    <p class="login-sub" data-i18n="login.sub">Single sign-on for the entire suite</p>
+    <div class="login-field">
+      <label class="login-label" for="masterKey" data-i18n="login.label">Master API Key</label>
+      <input class="login-input" id="masterKey" type="password" placeholder="••••••••••••••••" autocomplete="off" />
+    </div>
+    <button id="loginBtn" class="login-btn" data-i18n="login.btn">Sign In</button>
+    <div id="loginError" class="login-error" data-i18n="login.invalid">Invalid Master Key.</div>
+    <p class="login-disclaimer" data-i18n="login.disclaimer">Master Key validated client-side via SHA-256. Session lasts 8 hours per browser tab. Closing the tab clears the session.</p>
+    <a href="#" id="forgotKeyLink" class="login-forgot" data-i18n="login.forgot">Forgot Master Key?</a>
+  </div>
 </div>
 
-<div class="portal">
-  <header class="portal-header">
-    <div class="brand-mark">
-      <span class="dot"></span>
-      <span data-i18n="portal.eyebrow">SOC HUB SUITE</span>
+<!-- ============== AUTHED PORTAL ============== -->
+<div id="authedView">
+  <div class="portal-topbar">
+    <span class="session-pill"><span class="dot"></span><span data-i18n="portal.session">Session active</span></span>
+    <div class="lang-switch">
+      <button class="lang-btn" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="it">IT</button>
     </div>
-    <h1 class="portal-title">
-      <span data-i18n="portal.title.before">Choose your </span><span class="grad" data-i18n="portal.title.gradient">investigation</span><span data-i18n="portal.title.after"> tool</span>
-    </h1>
-    <p class="portal-subtitle" data-i18n="portal.subtitle">Each hub is purpose-built for a specific SOC workflow. Pick the right one for your current investigation.</p>
-  </header>
-
-  <main class="hub-grid">
-    <a href="/identity-intelligence-hub" class="hub-card identity">
-      <div class="hub-icon">🛡️</div>
-      <div class="hub-eyebrow" data-i18n="portal.intel.eyebrow">Identity Intelligence</div>
-      <div class="hub-name">Intel-Hub</div>
-      <div class="hub-tagline" data-i18n="portal.intel.tagline">Breach detection · Credential exposure · PII recon</div>
-      <p class="hub-desc" data-i18n="portal.intel.desc">Search across IntelX, HIBP, BreachDirectory, LeakIX and DeHashed for leaked credentials, exposed PII and breach data. Aggregated AI report from Claude. Use it for incident response, password rotation, customer breach assessment.</p>
-      <div class="hub-tags">
-        <span class="hub-tag">IntelX</span>
-        <span class="hub-tag">HIBP</span>
-        <span class="hub-tag">BreachDirectory</span>
-        <span class="hub-tag">LeakIX</span>
-        <span class="hub-tag">DeHashed</span>
+    <button class="logout-btn" id="logoutBtn"><span data-i18n="portal.logout">Sign out</span></button>
+  </div>
+  <div class="portal">
+    <header class="portal-header">
+      <div class="brand-mark">
+        <span class="dot"></span>
+        <span data-i18n="portal.eyebrow">SOC HUB SUITE</span>
       </div>
-      <span class="hub-cta">
-        <span data-i18n="portal.cta.open">Open</span> <span class="hub-cta-arrow">→</span>
-      </span>
-    </a>
-
-    <a href="/phish-hub" class="hub-card phish">
-      <div class="hub-icon">🎣</div>
-      <div class="hub-eyebrow" data-i18n="portal.phish.eyebrow">Email & Phishing OSINT</div>
-      <div class="hub-name">Phish-Hub</div>
-      <div class="hub-tagline" data-i18n="portal.phish.tagline">Sender reputation · DNS posture · URL detonation</div>
-      <p class="hub-desc" data-i18n="portal.phish.desc">Investigate suspicious senders, validate emails, audit DNS authentication (SPF/DKIM/DMARC), scan URLs and check threat reputation. Built to support Defender for Office 365 phishing investigations.</p>
-      <div class="hub-tags">
-        <span class="hub-tag">Hunter.io</span>
-        <span class="hub-tag">EmailRep</span>
-        <span class="hub-tag">DNS Recon</span>
-        <span class="hub-tag">URLScan.io</span>
-        <span class="hub-tag">VirusTotal</span>
+      <h1 class="portal-title">
+        <span data-i18n="portal.title.before">Choose your </span><span class="grad" data-i18n="portal.title.gradient">investigation</span><span data-i18n="portal.title.after"> tool</span>
+      </h1>
+      <p class="portal-subtitle" data-i18n="portal.subtitle">Each hub is purpose-built for a specific SOC workflow. Pick the right one for your current investigation.</p>
+    </header>
+    <main class="hub-grid">
+      <a href="/identity-intelligence-hub" class="hub-card identity">
+        <div class="hub-icon">🛡️</div>
+        <div class="hub-eyebrow" data-i18n="portal.intel.eyebrow">Identity Intelligence</div>
+        <div class="hub-name">Intel-Hub</div>
+        <div class="hub-tagline" data-i18n="portal.intel.tagline">Breach detection · Credential exposure · PII recon</div>
+        <p class="hub-desc" data-i18n="portal.intel.desc">Search across IntelX, HIBP, BreachDirectory, LeakIX and DeHashed for leaked credentials, exposed PII and breach data. Aggregated AI report from Claude. Use it for incident response, password rotation, customer breach assessment.</p>
+        <div class="hub-tags">
+          <span class="hub-tag">IntelX</span>
+          <span class="hub-tag">HIBP</span>
+          <span class="hub-tag">BreachDirectory</span>
+          <span class="hub-tag">LeakIX</span>
+          <span class="hub-tag">DeHashed</span>
+        </div>
+        <span class="hub-cta">
+          <span data-i18n="portal.cta.open">Open</span> <span class="hub-cta-arrow">→</span>
+        </span>
+      </a>
+      <a href="/phish-hub" class="hub-card phish">
+        <div class="hub-icon">🎣</div>
+        <div class="hub-eyebrow" data-i18n="portal.phish.eyebrow">Email & Phishing OSINT</div>
+        <div class="hub-name">Phish-Hub</div>
+        <div class="hub-tagline" data-i18n="portal.phish.tagline">Sender reputation · DNS posture · URL detonation</div>
+        <p class="hub-desc" data-i18n="portal.phish.desc">Investigate suspicious senders, validate emails, audit DNS authentication (SPF/DKIM/DMARC), scan URLs and check threat reputation. Built to support Defender for Office 365 phishing investigations.</p>
+        <div class="hub-tags">
+          <span class="hub-tag">Hunter.io</span>
+          <span class="hub-tag">EmailRep</span>
+          <span class="hub-tag">DNS Recon</span>
+          <span class="hub-tag">URLScan.io</span>
+          <span class="hub-tag">VirusTotal</span>
+        </div>
+        <span class="hub-cta">
+          <span data-i18n="portal.cta.open">Open</span> <span class="hub-cta-arrow">→</span>
+        </span>
+      </a>
+      <div class="hub-card future">
+        <div class="hub-icon">🔮</div>
+        <div class="hub-eyebrow" data-i18n="portal.future.eyebrow">Coming Soon</div>
+        <div class="hub-name" data-i18n="portal.future.name">Threat-Hub</div>
+        <div class="hub-tagline" data-i18n="portal.future.tagline">IOC correlation · CTI feeds · TTP mapping</div>
+        <p class="hub-desc" data-i18n="portal.future.desc">Cross-reference IOCs across MISP, OTX, AbuseIPDB, ThreatFox. MITRE ATT&amp;CK mapping. CTI feed aggregation for proactive threat hunting.</p>
+        <div class="hub-tags">
+          <span class="hub-tag">MISP</span>
+          <span class="hub-tag">OTX</span>
+          <span class="hub-tag">AbuseIPDB</span>
+          <span class="hub-tag">ATT&amp;CK</span>
+        </div>
+        <span class="hub-cta">
+          <span data-i18n="portal.cta.soon">Coming Soon</span>
+        </span>
       </div>
-      <span class="hub-cta">
-        <span data-i18n="portal.cta.open">Open</span> <span class="hub-cta-arrow">→</span>
-      </span>
-    </a>
-
-    <div class="hub-card future">
-      <div class="hub-icon">🔮</div>
-      <div class="hub-eyebrow" data-i18n="portal.future.eyebrow">Coming Soon</div>
-      <div class="hub-name" data-i18n="portal.future.name">Threat-Hub</div>
-      <div class="hub-tagline" data-i18n="portal.future.tagline">IOC correlation · CTI feeds · TTP mapping</div>
-      <p class="hub-desc" data-i18n="portal.future.desc">Cross-reference IOCs across MISP, OTX, AbuseIPDB, ThreatFox. MITRE ATT&amp;CK mapping. CTI feed aggregation for proactive threat hunting.</p>
-      <div class="hub-tags">
-        <span class="hub-tag">MISP</span>
-        <span class="hub-tag">OTX</span>
-        <span class="hub-tag">AbuseIPDB</span>
-        <span class="hub-tag">ATT&amp;CK</span>
-      </div>
-      <span class="hub-cta">
-        <span data-i18n="portal.cta.soon">Coming Soon</span>
-      </span>
-    </div>
-  </main>
-
-  <footer class="portal-footer">
-    <span data-i18n="portal.footer">SOC Tools Suite · @brightstarlottery · Internal use only</span>
-  </footer>
+    </main>
+    <footer class="portal-footer">
+      <span data-i18n="portal.footer">SOC Tools Suite · @brightstarlottery · Internal use only</span>
+    </footer>
+  </div>
 </div>
 
 <script>
+/* ====== Master Key auth ====== */
+const MASTER_KEY_HASH = '1419ad02684cb5c52dca2b1b5157337471458952b0292765dda232cb42ba7651';
+const SESSION_KEY = 'sochub-master-key';
+const SESSION_TS = 'sochub-auth-ts';
+const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8h
+const RECOVERY_EMAIL = 'samuel.ascone@gmail.com';
+
+async function sha256(str) {
+  const buf = new TextEncoder().encode(str);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function isSessionValid() {
+  const stored = sessionStorage.getItem(SESSION_KEY);
+  const ts = parseInt(sessionStorage.getItem(SESSION_TS) || '0');
+  if (!stored) return false;
+  if (Date.now() - ts > SESSION_TTL_MS) {
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_TS);
+    return false;
+  }
+  return true;
+}
+
+async function attemptLogin(key) {
+  if (!key || key.length < 4) return false;
+  const hash = await sha256(key);
+  return hash === MASTER_KEY_HASH;
+}
+
+function showAuthedView() {
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('authedView').classList.add('show');
+  // Se c'è returnTo, redirect immediatamente
+  const params = new URLSearchParams(window.location.search);
+  const returnTo = params.get('returnTo');
+  if (returnTo && /^\/[a-z0-9_\-\/]*$/i.test(returnTo)) {
+    window.location.replace(returnTo);
+  }
+}
+
+async function login() {
+  const key = document.getElementById('masterKey').value;
+  const errEl = document.getElementById('loginError');
+  errEl.classList.remove('show');
+  if (await attemptLogin(key)) {
+    sessionStorage.setItem(SESSION_KEY, key);
+    sessionStorage.setItem(SESSION_TS, Date.now().toString());
+    showAuthedView();
+  } else {
+    errEl.classList.add('show');
+  }
+}
+
+document.getElementById('loginBtn').onclick = login;
+document.getElementById('masterKey').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+document.getElementById('forgotKeyLink').onclick = e => {
+  e.preventDefault();
+  const subject = encodeURIComponent('SOC Hub Suite — Master Key recovery');
+  const body = encodeURIComponent('Ciao Samuel,\n\nho dimenticato la Master Key di accesso a SOC Hub Suite.\n\nGrazie,\n');
+  window.location.href = `mailto:${RECOVERY_EMAIL}?subject=${subject}&body=${body}`;
+};
+document.getElementById('logoutBtn').onclick = () => {
+  sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_TS);
+  location.reload();
+};
+
+/* ====== i18n ====== */
 const I18N = {
   en: {
+    'login.eyebrow': 'SOC HUB SUITE',
+    'login.sub': 'Single sign-on for the entire suite',
+    'login.label': 'Master API Key',
+    'login.btn': 'Sign In',
+    'login.invalid': 'Invalid Master Key.',
+    'login.disclaimer': 'Master Key validated client-side via SHA-256. Session lasts 8 hours per browser tab. Closing the tab clears the session.',
+    'login.forgot': 'Forgot Master Key?',
+    'portal.session': 'Session active',
+    'portal.logout': 'Sign out',
     'portal.eyebrow': 'SOC HUB SUITE',
     'portal.title.before': 'Choose your ',
     'portal.title.gradient': 'investigation',
@@ -370,6 +640,15 @@ const I18N = {
     'portal.footer': 'SOC Tools Suite · @brightstarlottery · Internal use only'
   },
   it: {
+    'login.eyebrow': 'SOC HUB SUITE',
+    'login.sub': 'Single sign-on per tutta la suite',
+    'login.label': 'Master API Key',
+    'login.btn': 'Accedi',
+    'login.invalid': 'Master Key non valida.',
+    'login.disclaimer': 'Master Key validata client-side via SHA-256. Sessione di 8 ore per tab del browser. Chiudere la tab pulisce la sessione.',
+    'login.forgot': 'Master Key dimenticata?',
+    'portal.session': 'Sessione attiva',
+    'portal.logout': 'Esci',
     'portal.eyebrow': 'SOC HUB SUITE',
     'portal.title.before': 'Scegli il tuo ',
     'portal.title.gradient': 'strumento',
@@ -410,6 +689,13 @@ document.querySelectorAll('.lang-btn').forEach(b => {
   };
 });
 applyTranslations();
+
+/* Boot: se sessione già attiva, mostra direttamente authed view */
+if (isSessionValid()) {
+  showAuthedView();
+} else {
+  document.getElementById('masterKey').focus();
+}
 </script>
 </body>
 </html>

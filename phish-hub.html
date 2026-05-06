@@ -4861,6 +4861,22 @@ async function init() {
   applyTranslations();
   lucide.createIcons();
 
+  // ====== SSO check: lookup session-storage from portal ======
+  const SSO_KEY = 'sochub-master-key';
+  const SSO_TS = 'sochub-auth-ts';
+  const SSO_TTL_MS = 8 * 60 * 60 * 1000;
+  const ssoMaster = sessionStorage.getItem(SSO_KEY);
+  const ssoTs = parseInt(sessionStorage.getItem(SSO_TS) || '0');
+  if (!ssoMaster || (Date.now() - ssoTs) > SSO_TTL_MS) {
+    sessionStorage.removeItem(SSO_KEY);
+    sessionStorage.removeItem(SSO_TS);
+    window.location.replace('/?returnTo=' + encodeURIComponent(window.location.pathname + window.location.hash));
+    return;
+  }
+  $('#loginModal').style.display = 'none';
+  $('#masterKey').value = ssoMaster;
+  setTimeout(() => login(), 50);
+
   // Language switcher
   $$('.lang-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.lang === currentLang);
@@ -4884,7 +4900,11 @@ async function init() {
 
   // App events
   $('#themeToggle').onclick = toggleTheme;
-  $('#logoutBtn').onclick = () => location.reload();
+  $('#logoutBtn').onclick = () => {
+    sessionStorage.removeItem('sochub-master-key');
+    sessionStorage.removeItem('sochub-auth-ts');
+    window.location.replace('/');
+  };
   $('#menuToggle').onclick = () => $('#sidebar').classList.toggle('open');
   $$('.nav-item').forEach(n => n.onclick = () => { location.hash = '#' + n.dataset.route; $('#sidebar').classList.remove('open'); });
 
