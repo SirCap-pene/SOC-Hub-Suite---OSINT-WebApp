@@ -667,6 +667,87 @@ input, select, textarea { font-family: inherit; }
 .chip-arrow { color: var(--accent); font-weight: 700; margin-left: 2px; }
 .chip-clickable i { color: var(--accent); }
 
+/* ========== SEARCHING PANEL (loading widget durante query) ========== */
+.searching-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--bg-1) 0%, color-mix(in srgb, var(--bg-1) 90%, var(--accent)) 200%);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  box-shadow: 0 14px 40px rgba(0,0,0,0.4), 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent) inset;
+}
+.searching-card::after {
+  content: '';
+  position: absolute; left: 0; right: 0; top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scanLine 2.4s linear infinite;
+}
+.searching-header {
+  display: flex; align-items: flex-start; gap: 18px;
+  margin-bottom: 8px;
+}
+.searching-icon {
+  width: 56px; height: 56px;
+  flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.searching-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.searching-svc {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.86rem;
+}
+.searching-svc-name {
+  flex: 1; min-width: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+}
+.searching-svc-spinner {
+  display: inline-flex; gap: 3px;
+}
+.searching-dot {
+  width: 5px; height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: searchingDot 1.2s ease-in-out infinite;
+}
+.searching-dot:nth-child(2) { animation-delay: 0.15s; }
+.searching-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes searchingDot {
+  0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+.searching-progress {
+  margin-top: 16px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bg-3);
+  overflow: hidden;
+}
+.searching-progress-bar {
+  height: 100%;
+  background: var(--gradient);
+  border-radius: 2px;
+  transform-origin: left;
+  animation: searchingBar 1.6s ease-in-out infinite;
+}
+@keyframes searchingBar {
+  0%   { transform: translateX(-100%) scaleX(0.3); }
+  50%  { transform: translateX(40%)  scaleX(0.6); }
+  100% { transform: translateX(150%) scaleX(0.3); }
+}
+
 /* ========== SEARCH CARDS (history) ========== */
 .search-card {
   background: linear-gradient(180deg, var(--bg-1) 0%, color-mix(in srgb, var(--bg-1) 92%, var(--bg-0)) 100%);
@@ -1953,7 +2034,7 @@ input, select, textarea { font-family: inherit; }
                 <div class="stat-item">
                   <div class="stat-label" data-i18n="stat.hits">Hit Totali</div>
                   <div class="stat-value" id="statHits">0</div>
-                  <div class="stat-trend" data-i18n="stat.hits.sub">leak + breach</div>
+                  <div class="stat-trend" data-i18n="stat.hits.sub">signals</div>
                 </div>
                 <div class="stat-item">
                   <div class="stat-label" data-i18n="stat.latency">Avg Latency</div>
@@ -2408,6 +2489,7 @@ const state = {
   recent: [],
   searchHistory: [],
   lastResults: null,
+  searching: null,    // {kw, type, services, startedAt} mentre una query è in corso
   rateUsage: {
     hunter: 0,
     emailrep: 0,
@@ -2535,7 +2617,7 @@ const I18N = {
     'validate.headers': 'Paste full email headers (Received, From, etc.).',
     'config.status.missing': 'Not configured ⚠️',
     'stat.hits': 'Total Hits',
-    'stat.hits.sub': 'leak + breach',
+    'stat.hits.sub': 'signals',
     'stat.latency': 'Avg Latency',
     'stat.latency.sub': 'via proxy',
     'search.eyebrow': 'Query Builder',
@@ -2708,6 +2790,11 @@ const I18N = {
     'col.unknown': 'unknown',
     'history.eyebrow': 'Search History',
     'history.empty.title': 'No searches yet',
+    'searching.title': 'Investigating',
+    'searching.body': 'Querying connectors in parallel. Results will appear here as soon as they arrive.',
+    'searching.querying': 'Querying',
+    'searching.timing': 'Average time: 5–30s. First-hit on free tiers may take up to 60s.',
+    'searching.connectors': 'connectors',
     'history.empty.body': 'Open Search, enter a keyword and hit Run. All your searches will be archived here, click to expand each one.',
     'history.delete': 'Delete',
     'history.deleteConfirm': 'Delete this search from history?',
@@ -2776,7 +2863,7 @@ const I18N = {
     'validate.headers': 'Incolla header email completi (Received, From, ecc.).',
     'config.status.missing': 'Non configurata ⚠️',
     'stat.hits': 'Hit Totali',
-    'stat.hits.sub': 'leak + breach',
+    'stat.hits.sub': 'segnali',
     'stat.latency': 'Avg Latency',
     'stat.latency.sub': 'via proxy',
     'search.eyebrow': 'Query Builder',
@@ -2949,6 +3036,11 @@ const I18N = {
     'col.unknown': 'sconosciuto',
     'history.eyebrow': 'Cronologia Ricerche',
     'history.empty.title': 'Nessuna ricerca ancora',
+    'searching.title': 'Sto investigando',
+    'searching.body': 'Interrogo i connettori in parallelo. I risultati appariranno qui appena disponibili.',
+    'searching.querying': 'Interrogo',
+    'searching.timing': 'Tempo medio: 5–30s. La prima chiamata sui free tier può richiedere fino a 60s.',
+    'searching.connectors': 'connettori',
     'history.empty.body': 'Apri Ricerca, inserisci una keyword e premi Avvia. Tutte le tue ricerche verranno archiviate qui, clicca per espandere ognuna.',
     'history.delete': 'Elimina',
     'history.deleteConfirm': 'Eliminare questa ricerca dalla cronologia?',
@@ -3979,9 +4071,50 @@ function isServiceConfigured(id) {
 
 // Renderizza tutta la cronologia delle ricerche come card collassabili.
 // Se focusId è passato, quella card sarà espansa di default e scrollata in vista.
+function renderSearchingPanel(s) {
+  const services = (s.services || []).map(svc => {
+    const meta = SERVICES[svc];
+    if (!meta) return '';
+    return `<div class="searching-svc" data-svc="${svc}">
+      <span class="svc-dot" style="background:${meta.color}"></span>
+      <span class="searching-svc-name">${meta.name}</span>
+      <span class="searching-svc-spinner"><span class="searching-dot"></span><span class="searching-dot"></span><span class="searching-dot"></span></span>
+    </div>`;
+  }).join('');
+  const elapsed = ((Date.now() - s.startedAt) / 1000).toFixed(1);
+  return `
+    <div class="card searching-card">
+      <div class="searching-header">
+        <div class="searching-icon">
+          <svg viewBox="0 0 50 50" width="48" height="48"><circle cx="25" cy="25" r="20" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="60 200" transform="rotate(0 25 25)"><animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1.2s" repeatCount="indefinite"/></circle></svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div class="section-eyebrow">${t('searching.title')}</div>
+          <h2 style="margin-bottom: 6px; word-break: break-all;">${escapeHtml(s.kw)}</h2>
+          <div class="muted" style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;">
+            <span>${t('searching.querying')} ${(s.services || []).length} ${t('searching.connectors')}</span>
+            <span style="margin: 0 8px;">·</span>
+            <span class="searching-elapsed" data-started="${s.startedAt}">${elapsed}s</span>
+          </div>
+        </div>
+      </div>
+      <p class="muted" style="margin: 14px 0; font-size: 0.88rem;">${t('searching.body')}</p>
+      <div class="searching-list">${services}</div>
+      <div class="searching-progress"><div class="searching-progress-bar"></div></div>
+      <p class="muted" style="margin-top: 12px; font-size: 0.78rem;">${t('searching.timing')}</p>
+    </div>
+  `;
+}
+
 function renderAllResults(focusId) {
   const c = $('#resultsContainer');
   if (!c) return;
+  // Search in progress: mostra il loading panel
+  if (state.searching) {
+    c.innerHTML = renderSearchingPanel(state.searching);
+    lucide.createIcons();
+    return;
+  }
   if (!state.searchHistory.length) {
     c.innerHTML = `
       <div class="card" style="padding: 0; overflow: hidden;">
@@ -4830,21 +4963,22 @@ async function triggerSearch() {
       setAvatarState('searching', avatarMsg('searchingLong'));
     }
   }, 8000);
-  location.hash = '#results';
-  $('#resultsContainer').innerHTML = `
-    <div class="card">
-      <div class="sk-line skeleton w-40" style="height:24px;"></div>
-      <div class="sk-line skeleton w-60"></div>
-      <div class="sk-line skeleton w-80"></div>
-    </div>
-    <div class="card">
-      <div class="sk-line skeleton w-80"></div>
-      <div class="sk-line skeleton w-80"></div>
-      <div class="sk-line skeleton w-60"></div>
-    </div>
-  `;
+  // Imposta lo stato 'searching' che renderAllResults usa per mostrare il loading panel
+  state.searching = { kw, type, services, startedAt: Date.now() };
+  // Naviga ai results: hashchange fa scattare renderAllResults che vede state.searching
+  if (location.hash === '#results') renderAllResults();
+  else location.hash = '#results';
+  // Tick contatore elapsed ogni 500ms
+  const elapsedTimer = setInterval(() => {
+    const el = document.querySelector('.searching-elapsed');
+    if (!el) { clearInterval(elapsedTimer); return; }
+    const started = parseInt(el.dataset.started || '0');
+    el.textContent = ((Date.now() - started) / 1000).toFixed(1) + 's';
+  }, 500);
 
   const payload = await runSearch(kw, type, services);
+  clearInterval(elapsedTimer);
+  state.searching = null;
   // Crea entry univoca e aggiungi in cima alla history
   const entry = { id: 'h' + Date.now() + Math.random().toString(36).slice(2,6), ...payload, aiAnalysis: null };
   state.searchHistory.unshift(entry);
