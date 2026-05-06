@@ -4508,46 +4508,61 @@ async function fetchProviderQuotas() {
   if (state.quotasFetching) return;
   state.quotasFetching = true;
   const tasks = [];
+
   if (state.apiKeys.hunter) {
     tasks.push((async () => {
       try {
-        const r = await fetchTimeout(proxied(`https://api.hunter.io/v2/account?api_key=${encodeURIComponent(state.apiKeys.hunter)}`), {}, 12000);
-        if (!r.ok) return;
+        const url = `https://api.hunter.io/v2/account?api_key=${encodeURIComponent(state.apiKeys.hunter)}`;
+        const r = await fetchTimeout(proxied(url), {}, 12000);
+        if (!r.ok) { console.warn('[quota.hunter] HTTP', r.status); return; }
         const j = await r.json();
-        const s = j.data?.requests?.searches;
-        if (!s) return;
-        state.quotas.hunter = { used: s.used || 0, limit: s.available || 25, resetAt: j.data?.reset_date || null, source: 'api' };
-      } catch (e) {}
+        console.log('[quota.hunter] response:', j);
+        const searches = j.data?.requests?.searches;
+        const calls = j.data?.calls;
+        const used = searches?.used ?? calls?.used ?? null;
+        const limit = searches?.available ?? calls?.available ?? null;
+        if (used !== null && limit !== null) {
+          state.quotas.hunter = { used, limit, resetAt: j.data?.reset_date || null, source: 'api' };
+        } else { console.warn('[quota.hunter] could not parse used/limit'); }
+      } catch (e) { console.warn('[quota.hunter] exception:', e); }
     })());
   }
+
   if (state.apiKeys.virustotal) {
     tasks.push((async () => {
       try {
-        const r = await fetchTimeout(proxied(`https://www.virustotal.com/api/v3/users/${encodeURIComponent(state.apiKeys.virustotal)}/overall_quotas`), { headers: { 'x-apikey': state.apiKeys.virustotal } }, 12000);
-        if (!r.ok) return;
+        const url = `https://www.virustotal.com/api/v3/users/${encodeURIComponent(state.apiKeys.virustotal)}/overall_quotas`;
+        const r = await fetchTimeout(proxied(url), { headers: { 'x-apikey': state.apiKeys.virustotal } }, 12000);
+        if (!r.ok) { console.warn('[quota.virustotal] HTTP', r.status); return; }
         const j = await r.json();
-        const d = j.data?.api_requests_daily?.user;
-        if (!d) return;
-        state.quotas.virustotal = { used: d.used || 0, limit: d.allowed || 500, resetAt: null, source: 'api' };
-      } catch (e) {}
+        console.log('[quota.virustotal] response:', j);
+        const dailyUser = j.data?.api_requests_daily?.user || j.data?.attributes?.api_requests_daily?.user;
+        if (dailyUser) {
+          state.quotas.virustotal = { used: dailyUser.used || 0, limit: dailyUser.allowed || 500, resetAt: null, source: 'api' };
+        } else { console.warn('[quota.virustotal] could not parse'); }
+      } catch (e) { console.warn('[quota.virustotal] exception:', e); }
     })());
   }
+
   if (state.apiKeys.urlscan) {
     tasks.push((async () => {
       try {
         const r = await fetchTimeout(proxied('https://urlscan.io/user/quotas/'), { headers: { 'API-Key': state.apiKeys.urlscan } }, 12000);
-        if (!r.ok) return;
+        if (!r.ok) { console.warn('[quota.urlscan] HTTP', r.status); return; }
         const j = await r.json();
-        const used = j.used_month ?? j.used_today ?? 0;
-        const limit = j.limits?.public?.month || 5000;
+        console.log('[quota.urlscan] response:', j);
+        const used = j.used?.public?.month ?? j.used?.search?.month ?? j.used_month ?? 0;
+        const limit = j.limits?.public?.month ?? j.limits?.search?.month ?? 5000;
         state.quotas.urlscan = { used, limit, resetAt: null, source: 'api' };
-      } catch (e) {}
+      } catch (e) { console.warn('[quota.urlscan] exception:', e); }
     })());
   }
+
   state.quotas.doh = { used: state.rateUsage.doh || 0, limit: Infinity, source: 'unlimited' };
   await Promise.allSettled(tasks);
   state.quotasFetchedAt = Date.now();
   state.quotasFetching = false;
+  console.log('[quotas] final:', state.quotas);
 }
 
 async function refreshQuotasUI() {
