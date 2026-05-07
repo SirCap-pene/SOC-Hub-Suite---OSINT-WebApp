@@ -1313,16 +1313,53 @@ input, select, textarea { font-family: inherit; }
   75% { transform: translateX(1px); }
 }
 
-/* Pigtail sway gentle in idle */
-.sk-pigtail-l { transform-origin: 95 145; animation: skPigSwayL 6s ease-in-out infinite; }
-.sk-pigtail-r { transform-origin: 265 145; animation: skPigSwayR 6s ease-in-out infinite; }
-@keyframes skPigSwayL {
-  0%, 100% { transform: rotate(-2deg); }
-  50% { transform: rotate(2deg); }
+/* ====== MAKIMA MOTION OVERRIDES ======
+   Makima is calm/composed — dampen Sakura's bouncy/cute amplitudes.
+   These rules are placed AFTER the Sakura state rules so cascade wins. */
+
+/* Reduce idle breathe amplitude (Sakura: -3px → Makima: -1px) */
+@keyframes avBreathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
 }
-@keyframes skPigSwayR {
-  0%, 100% { transform: rotate(2deg); }
-  50% { transform: rotate(-2deg); }
+
+/* Reduce success bob amplitude */
+@keyframes avBob {
+  0%, 100% { transform: translateY(-0.5px); }
+  50% { transform: translateY(0.5px); }
+}
+
+/* Reduce searching forward lean — slight, not playful */
+@keyframes avLeanForward {
+  0%, 100% { transform: translateY(0.5px) rotate(-0.3deg); }
+  50% { transform: translateY(0) rotate(0.3deg); }
+}
+
+/* Subtle wave hand (Sakura: -8/+8 deg → Makima: -3/+3 deg) */
+@keyframes skWaveHand {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* Suppress angry tremor (Makima glares, doesn't shake) */
+.avatar-stage[data-state="angry"] .av-body { animation: avBreathe 6s ease-in-out infinite !important; }
+
+/* Tears stay invisible even in error state */
+.avatar-stage[data-state="error"] .av-tears { opacity: 0 !important; animation: none !important; }
+
+/* Anger sparks stay invisible */
+.avatar-stage[data-state="angry"] .sk-anger { opacity: 0 !important; animation: none !important; }
+
+/* Subtle braid sway in idle (gentle pendulum on shoulder strand) */
+.mk-braid { transform-origin: 200px 180px; animation: mkBraidSway 7s ease-in-out infinite; }
+@keyframes mkBraidSway {
+  0%, 100% { transform: rotate(-0.6deg); }
+  50% { transform: rotate(0.6deg); }
+}
+.mk-braid-tip { transform-origin: 220px 248px; animation: mkBraidTip 5s ease-in-out infinite; }
+@keyframes mkBraidTip {
+  0%, 100% { transform: translateX(-0.6px); }
+  50% { transform: translateX(0.6px); }
 }
 
 /* Hero art (anime cyber investigator) */
@@ -1652,7 +1689,7 @@ input, select, textarea { font-family: inherit; }
     <div class="avatar-stage" data-state="idle" id="avatarStage">
       <div class="avatar-bubble" id="avatarBubble">
         <div class="avatar-bubble-inner">
-          <div class="avatar-bubble-name">SAKURA <span class="avatar-bubble-tag">analyst</span></div>
+          <div class="avatar-bubble-name">MAKIMA <span class="avatar-bubble-tag">analyst</span></div>
           <div class="avatar-bubble-msg" id="avatarBubbleMsg">Ready when you are. Run a query to begin.</div>
         </div>
         <span class="avatar-bubble-arrow"></span>
@@ -1662,59 +1699,60 @@ input, select, textarea { font-family: inherit; }
         <div class="avatar-floor"></div>
         <svg class="avatar-svg" viewBox="0 0 360 460" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <!-- Crimson red hair gradient (Phish-Hub variant) -->
+            <!-- Makima coppery-red hair (warm, restrained) -->
             <linearGradient id="skHair" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fda4af"/>
-              <stop offset="40%" stop-color="#f43f5e"/>
-              <stop offset="100%" stop-color="#9f1239"/>
+              <stop offset="0%" stop-color="#d97757"/>
+              <stop offset="55%" stop-color="#b8543a"/>
+              <stop offset="100%" stop-color="#7c3220"/>
             </linearGradient>
             <linearGradient id="skHairLight" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fff" stop-opacity="0.85"/>
+              <stop offset="0%" stop-color="#fff" stop-opacity="0.55"/>
               <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
             </linearGradient>
             <linearGradient id="skHairShade" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#a64a78" stop-opacity="0"/>
-              <stop offset="100%" stop-color="#a64a78" stop-opacity="0.4"/>
+              <stop offset="0%" stop-color="#5a2210" stop-opacity="0"/>
+              <stop offset="100%" stop-color="#3a1408" stop-opacity="0.5"/>
             </linearGradient>
-            <!-- Skin -->
+            <!-- Skin (slightly cooler / mature) -->
             <linearGradient id="skSkin" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fff1e0"/>
-              <stop offset="100%" stop-color="#fadbb8"/>
+              <stop offset="0%" stop-color="#fbe7d2"/>
+              <stop offset="100%" stop-color="#ecceb0"/>
             </linearGradient>
             <radialGradient id="skBlush" cx="50%" cy="50%">
-              <stop offset="0%" stop-color="#ff8db4" stop-opacity="0.5"/>
-              <stop offset="100%" stop-color="#ff8db4" stop-opacity="0"/>
+              <stop offset="0%" stop-color="#d9886a" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#d9886a" stop-opacity="0"/>
             </radialGradient>
-            <!-- Eyes -->
-            <radialGradient id="skIris" cx="50%" cy="40%">
-              <stop offset="0%" stop-color="#fef3c7"/>
-              <stop offset="50%" stop-color="#fb923c"/>
-              <stop offset="100%" stop-color="#7c2d12"/>
+            <!-- Makima signature: gold concentric iris -->
+            <radialGradient id="skIris" cx="50%" cy="50%">
+              <stop offset="0%" stop-color="#fde68a"/>
+              <stop offset="35%" stop-color="#f59e0b"/>
+              <stop offset="75%" stop-color="#b45309"/>
+              <stop offset="100%" stop-color="#5a2410"/>
             </radialGradient>
-            <!-- Blouse white -->
+            <!-- Light shirt -->
             <linearGradient id="skBlouse" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#ffffff"/>
-              <stop offset="100%" stop-color="#e6e8ed"/>
+              <stop offset="0%" stop-color="#f8f6f0"/>
+              <stop offset="100%" stop-color="#dcd8cf"/>
             </linearGradient>
-            <!-- Pinafore dress dark -->
+            <!-- Black tie / trousers -->
             <linearGradient id="skDress" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2a2f48"/>
-              <stop offset="100%" stop-color="#13162a"/>
+              <stop offset="0%" stop-color="#1a1a1c"/>
+              <stop offset="100%" stop-color="#070708"/>
             </linearGradient>
             <linearGradient id="skSkirt" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#13162a"/>
-              <stop offset="50%" stop-color="#2a2f48"/>
-              <stop offset="100%" stop-color="#13162a"/>
+              <stop offset="0%" stop-color="#0a0a0c"/>
+              <stop offset="50%" stop-color="#1f1f23"/>
+              <stop offset="100%" stop-color="#0a0a0c"/>
             </linearGradient>
-            <!-- Stockings -->
+            <!-- Trouser shadow / belt -->
             <linearGradient id="skStocking" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#1f2333"/>
-              <stop offset="100%" stop-color="#0c0e1a"/>
+              <stop offset="0%" stop-color="#1a1a1c"/>
+              <stop offset="100%" stop-color="#050506"/>
             </linearGradient>
-            <!-- Shoes brown -->
+            <!-- Brown shoes (preserved) -->
             <linearGradient id="skShoe" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#8b5a3c"/>
-              <stop offset="100%" stop-color="#5d3a25"/>
+              <stop offset="0%" stop-color="#7a4a30"/>
+              <stop offset="100%" stop-color="#3e2616"/>
             </linearGradient>
             <!-- Laptop -->
             <linearGradient id="skLaptop" x1="0" y1="0" x2="0" y2="1">
@@ -1723,12 +1761,12 @@ input, select, textarea { font-family: inherit; }
             </linearGradient>
             <linearGradient id="skScreen" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stop-color="#5eead4"/>
-              <stop offset="100%" stop-color="#ec4899"/>
+              <stop offset="100%" stop-color="#f59e0b"/>
             </linearGradient>
             <filter id="skSoft">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-              <feOffset dx="0" dy="3" result="b"/>
-              <feComponentTransfer><feFuncA type="linear" slope="0.45"/></feComponentTransfer>
+              <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+              <feOffset dx="0" dy="2" result="b"/>
+              <feComponentTransfer><feFuncA type="linear" slope="0.35"/></feComponentTransfer>
               <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
           </defs>
@@ -1736,246 +1774,264 @@ input, select, textarea { font-family: inherit; }
           <!-- Body group: subtle breathing -->
           <g class="av-body">
 
-            <!-- ===== HAIR BACK LAYER (lunghi capelli oltre le spalle) ===== -->
-            <path d="M 110 130 Q 78 200 75 290 Q 78 360 100 410 L 130 415 Q 118 360 122 280 Q 125 200 140 145 Z" fill="url(#skHair)"/>
-            <path d="M 250 130 Q 282 200 285 290 Q 282 360 260 410 L 230 415 Q 242 360 238 280 Q 235 200 220 145 Z" fill="url(#skHair)"/>
-            <!-- Hair back highlight -->
-            <path d="M 100 200 Q 92 280 105 360" fill="none" stroke="#fff" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
-            <path d="M 260 200 Q 268 280 255 360" fill="none" stroke="#fff" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
-
-            <!-- ===== LEGS (stockings + shoes) ===== -->
-            <g class="sk-legs">
-              <!-- Cosce dress shadow -->
-              <ellipse cx="155" cy="358" rx="22" ry="8" fill="#000" opacity="0.3"/>
-              <ellipse cx="205" cy="358" rx="22" ry="8" fill="#000" opacity="0.3"/>
-              <!-- Stocking left -->
-              <path d="M 138 360 Q 134 400 138 440 L 168 440 Q 170 400 168 360 Z" fill="url(#skStocking)"/>
-              <!-- Stocking right -->
-              <path d="M 192 360 Q 190 400 192 440 L 222 440 Q 226 400 222 360 Z" fill="url(#skStocking)"/>
-              <!-- Stocking top band -->
-              <rect x="138" y="358" width="30" height="3" fill="#000" opacity="0.5"/>
-              <rect x="192" y="358" width="30" height="3" fill="#000" opacity="0.5"/>
-              <!-- Stocking shine -->
-              <line x1="142" y1="365" x2="143" y2="438" stroke="#fff" stroke-width="1.4" opacity="0.18"/>
-              <line x1="196" y1="365" x2="197" y2="438" stroke="#fff" stroke-width="1.4" opacity="0.18"/>
-              <!-- Shoes brown -->
-              <ellipse cx="153" cy="445" rx="18" ry="8" fill="url(#skShoe)"/>
-              <ellipse cx="207" cy="445" rx="18" ry="8" fill="url(#skShoe)"/>
-              <!-- Shoe shine -->
-              <ellipse cx="151" cy="442" rx="8" ry="2" fill="#fff" opacity="0.25"/>
-              <ellipse cx="205" cy="442" rx="8" ry="2" fill="#fff" opacity="0.25"/>
+            <!-- ===== BACK BRAID (single long, behind body, signature Makima silhouette) ===== -->
+            <g class="mk-braid">
+              <!-- Braid base + segments coming from back of head, exiting behind right shoulder -->
+              <path d="M 196 180 Q 210 200 218 230 L 224 410 Q 222 420 215 420 Q 208 420 207 410 L 198 232 Q 192 200 188 182 Z" fill="url(#skHair)"/>
+              <!-- Braid weave segments (alternating shadow + highlight ovals to suggest plait) -->
+              <ellipse cx="213" cy="252" rx="8.5" ry="6" fill="url(#skHair)" stroke="#3a1408" stroke-width="0.6" opacity="0.95"/>
+              <ellipse cx="213" cy="278" rx="8.5" ry="6" fill="url(#skHair)" stroke="#3a1408" stroke-width="0.6" opacity="0.95"/>
+              <ellipse cx="213" cy="304" rx="8.5" ry="6" fill="url(#skHair)" stroke="#3a1408" stroke-width="0.6" opacity="0.95"/>
+              <ellipse cx="213" cy="330" rx="8.5" ry="6" fill="url(#skHair)" stroke="#3a1408" stroke-width="0.6" opacity="0.95"/>
+              <ellipse cx="213" cy="356" rx="8.5" ry="6" fill="url(#skHair)" stroke="#3a1408" stroke-width="0.6" opacity="0.95"/>
+              <ellipse cx="213" cy="382" rx="7" ry="5" fill="url(#skHair)" stroke="#3a1408" stroke-width="0.6" opacity="0.95"/>
+              <!-- Diagonal weave lines -->
+              <path d="M 207 246 L 219 258 M 207 272 L 219 284 M 207 298 L 219 310 M 207 324 L 219 336 M 207 350 L 219 362 M 219 246 L 207 258 M 219 272 L 207 284 M 219 298 L 207 310 M 219 324 L 207 336 M 219 350 L 207 362" stroke="#3a1408" stroke-width="0.7" opacity="0.55"/>
+              <!-- Highlight strand -->
+              <path d="M 213 200 L 213 380" stroke="#fff" stroke-width="0.9" opacity="0.18"/>
+              <!-- Tail wisp at end -->
+              <path d="M 209 388 Q 211 405 215 412 Q 218 405 217 388 Z" fill="url(#skHair)"/>
             </g>
 
-            <!-- ===== PINAFORE SKIRT (pleated A-line) ===== -->
-            <path d="M 120 290 Q 130 280 145 280 L 215 280 Q 230 280 240 290 L 260 365 Q 180 380 100 365 Z" fill="url(#skSkirt)" filter="url(#skSoft)"/>
-            <!-- Pleat lines -->
-            <line x1="135" y1="295" x2="118" y2="362" stroke="#000" stroke-width="0.6" opacity="0.4"/>
-            <line x1="155" y1="290" x2="148" y2="368" stroke="#000" stroke-width="0.6" opacity="0.4"/>
-            <line x1="180" y1="288" x2="180" y2="370" stroke="#000" stroke-width="0.6" opacity="0.4"/>
-            <line x1="205" y1="290" x2="212" y2="368" stroke="#000" stroke-width="0.6" opacity="0.4"/>
-            <line x1="225" y1="295" x2="242" y2="362" stroke="#000" stroke-width="0.6" opacity="0.4"/>
-            <!-- Skirt bottom highlight -->
-            <path d="M 110 360 Q 180 376 250 360" fill="none" stroke="#fff" stroke-width="0.8" opacity="0.18"/>
+            <!-- ===== HAIR BACK (silhouette around head/neck, shorter than Sakura's wings) ===== -->
+            <path d="M 124 130 Q 110 170 116 220 L 138 232 Q 134 200 138 160 Z" fill="url(#skHair)"/>
+            <path d="M 236 130 Q 250 170 244 220 L 222 232 Q 226 200 222 160 Z" fill="url(#skHair)"/>
+            <!-- Subtle back-mass shading -->
+            <path d="M 122 175 Q 116 210 124 232" fill="none" stroke="#3a1408" stroke-width="1.2" opacity="0.35"/>
+            <path d="M 238 175 Q 244 210 236 232" fill="none" stroke="#3a1408" stroke-width="1.2" opacity="0.35"/>
 
-            <!-- ===== BLOUSE (white short-sleeve) ===== -->
-            <path d="M 130 235 Q 125 270 130 295 L 230 295 Q 235 270 230 235 L 215 230 L 145 230 Z" fill="url(#skBlouse)" filter="url(#skSoft)"/>
-            <!-- Blouse buttons line -->
-            <line x1="180" y1="240" x2="180" y2="290" stroke="#d8d8e0" stroke-width="0.5"/>
-            <circle cx="180" cy="252" r="1.2" fill="#c0c0c8"/>
-            <circle cx="180" cy="270" r="1.2" fill="#c0c0c8"/>
-            <circle cx="180" cy="285" r="1.2" fill="#c0c0c8"/>
+            <!-- ===== TROUSERS (high-waisted, slim fit) ===== -->
+            <!-- Waistband -->
+            <rect x="135" y="293" width="90" height="14" fill="url(#skDress)" filter="url(#skSoft)"/>
+            <!-- Belt subtle highlight -->
+            <line x1="138" y1="296" x2="222" y2="296" stroke="#2a2a2a" stroke-width="0.5" opacity="0.7"/>
+            <line x1="138" y1="304" x2="222" y2="304" stroke="#000" stroke-width="0.4" opacity="0.6"/>
+            <!-- Trouser body: from waistband down, slight outer curve at hips, slim at ankle -->
+            <path d="M 137 307 Q 132 330 132 360 Q 132 400 138 442 L 175 442 Q 178 400 178 360 Q 178 330 178 307 Z" fill="url(#skSkirt)"/>
+            <path d="M 182 307 Q 182 330 182 360 Q 182 400 185 442 L 222 442 Q 228 400 228 360 Q 228 330 223 307 Z" fill="url(#skSkirt)"/>
+            <!-- Center crease lines (subtle) -->
+            <line x1="156" y1="312" x2="156" y2="438" stroke="#fff" stroke-width="0.5" opacity="0.08"/>
+            <line x1="204" y1="312" x2="204" y2="438" stroke="#fff" stroke-width="0.5" opacity="0.08"/>
+            <!-- Inseam shadow -->
+            <line x1="180" y1="307" x2="180" y2="438" stroke="#000" stroke-width="0.7" opacity="0.5"/>
+            <!-- Outer shadow on legs -->
+            <path d="M 134 320 Q 130 380 136 440" fill="none" stroke="#000" stroke-width="2" opacity="0.25"/>
+            <path d="M 226 320 Q 230 380 224 440" fill="none" stroke="#000" stroke-width="2" opacity="0.25"/>
 
-            <!-- ===== PINAFORE STRAPS (suspenders dark) ===== -->
-            <path d="M 152 230 L 150 290 L 160 290 L 162 232 Z" fill="url(#skDress)"/>
-            <path d="M 208 230 L 210 290 L 200 290 L 198 232 Z" fill="url(#skDress)"/>
+            <!-- ===== SHOES (brown leather, preserved) ===== -->
+            <ellipse cx="156" cy="448" rx="18" ry="6" fill="url(#skShoe)"/>
+            <ellipse cx="204" cy="448" rx="18" ry="6" fill="url(#skShoe)"/>
+            <ellipse cx="154" cy="446" rx="9" ry="1.6" fill="#fff" opacity="0.18"/>
+            <ellipse cx="202" cy="446" rx="9" ry="1.6" fill="#fff" opacity="0.18"/>
 
-            <!-- ===== COLLAR (white with black ribbon) ===== -->
-            <path d="M 158 220 L 145 240 L 165 240 Z" fill="#ffffff" stroke="#d8d8e0" stroke-width="0.5"/>
-            <path d="M 202 220 L 215 240 L 195 240 Z" fill="#ffffff" stroke="#d8d8e0" stroke-width="0.5"/>
-            <!-- Black bow tie -->
-            <g transform="translate(180 232)">
-              <path d="M -10 -4 L -2 0 L -10 4 Z" fill="#1a1a1a"/>
-              <path d="M 10 -4 L 2 0 L 10 4 Z" fill="#1a1a1a"/>
-              <ellipse cx="0" cy="0" rx="3" ry="2.5" fill="#0a0a0a"/>
-              <line x1="-2" y1="3" x2="-2" y2="14" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
-            </g>
+            <!-- ===== SHIRT BODY (light, long-sleeved, tucked into trousers) ===== -->
+            <path d="M 132 232 Q 126 270 132 295 L 228 295 Q 234 270 228 232 L 215 228 L 145 228 Z" fill="url(#skBlouse)" filter="url(#skSoft)"/>
+            <!-- Shirt centre placket + buttons -->
+            <line x1="180" y1="240" x2="180" y2="293" stroke="#c8c4ba" stroke-width="0.6"/>
+            <circle cx="180" cy="252" r="1" fill="#a8a49a"/>
+            <circle cx="180" cy="266" r="1" fill="#a8a49a"/>
+            <circle cx="180" cy="280" r="1" fill="#a8a49a"/>
+            <!-- Subtle drape shadow under bust line -->
+            <path d="M 138 268 Q 180 274 222 268" fill="none" stroke="#000" stroke-width="0.5" opacity="0.18"/>
+            <!-- Side shadow strokes (cloth folds, kept restrained) -->
+            <path d="M 145 246 L 142 282" stroke="#000" stroke-width="0.5" opacity="0.18"/>
+            <path d="M 215 246 L 218 282" stroke="#000" stroke-width="0.5" opacity="0.18"/>
+
+            <!-- ===== COLLAR (pointed shirt collar) ===== -->
+            <path d="M 162 222 L 152 246 L 174 240 Z" fill="#f8f6f0" stroke="#a8a49a" stroke-width="0.5"/>
+            <path d="M 198 222 L 208 246 L 186 240 Z" fill="#f8f6f0" stroke="#a8a49a" stroke-width="0.5"/>
+
+            <!-- ===== NECKTIE (black, knot + body) ===== -->
+            <!-- Knot -->
+            <path d="M 174 230 L 186 230 L 188 244 L 172 244 Z" fill="url(#skDress)"/>
+            <line x1="175" y1="234" x2="185" y2="234" stroke="#fff" stroke-width="0.3" opacity="0.2"/>
+            <!-- Body of tie (slight taper) -->
+            <path d="M 173 244 L 187 244 L 189 290 L 178 296 L 171 290 Z" fill="url(#skDress)"/>
+            <!-- Tie shine -->
+            <line x1="180" y1="248" x2="180" y2="288" stroke="#fff" stroke-width="0.6" opacity="0.10"/>
 
             <!-- ===== NECK ===== -->
-            <rect x="170" y="200" width="20" height="22" rx="4" fill="url(#skSkin)"/>
-            <ellipse cx="180" cy="218" rx="14" ry="3" fill="#000" opacity="0.12"/>
+            <rect x="170" y="200" width="20" height="22" rx="3" fill="url(#skSkin)"/>
+            <!-- Neck shadow under jaw -->
+            <path d="M 168 206 Q 180 213 192 206" fill="#000" opacity="0.12"/>
 
-            <!-- ===== HEAD ===== -->
-            <ellipse class="sk-head" cx="180" cy="155" rx="58" ry="65" fill="url(#skSkin)" filter="url(#skSoft)"/>
-            <!-- Side shading -->
-            <path d="M 215 130 Q 240 170 215 210 Q 200 200 205 165 Z" fill="#000" opacity="0.08"/>
-            <!-- Jaw shadow -->
-            <path d="M 158 200 Q 180 218 202 200" fill="none" stroke="#000" stroke-width="0.6" opacity="0.15"/>
+            <!-- ===== HEAD (slimmer adult oval) ===== -->
+            <ellipse class="sk-head" cx="180" cy="158" rx="50" ry="58" fill="url(#skSkin)" filter="url(#skSoft)"/>
+            <!-- Side cheek shading (more subtle) -->
+            <path d="M 220 138 Q 234 175 218 208 Q 208 200 213 168 Z" fill="#000" opacity="0.06"/>
+            <path d="M 140 138 Q 126 175 142 208 Q 152 200 147 168 Z" fill="#000" opacity="0.04"/>
+            <!-- Subtle jaw line -->
+            <path d="M 156 200 Q 180 215 204 200" fill="none" stroke="#000" stroke-width="0.5" opacity="0.18"/>
 
-            <!-- ===== HAIR FRONT (bangs ondulati anime) ===== -->
-            <!-- Bangs main -->
-            <path d="M 122 145 Q 135 105 165 95 Q 178 90 195 95 Q 225 105 240 145 Q 230 175 200 162 Q 190 152 180 158 Q 170 152 160 162 Q 130 175 122 145 Z" fill="url(#skHair)"/>
-            <!-- Bangs details / strands -->
-            <path d="M 130 138 Q 152 118 175 130 Q 175 148 162 158 Q 142 158 130 138 Z" fill="url(#skHair)" stroke="#a64a78" stroke-width="0.4" opacity="0.95"/>
-            <path d="M 188 130 Q 215 120 232 145 Q 220 160 200 158 Q 188 152 188 130 Z" fill="url(#skHair)" stroke="#a64a78" stroke-width="0.4" opacity="0.95"/>
-            <!-- Bang highlights -->
-            <path d="M 135 130 Q 155 120 168 130" fill="none" stroke="#fff" stroke-width="2" opacity="0.55" stroke-linecap="round"/>
-            <path d="M 195 128 Q 215 120 228 138" fill="none" stroke="#fff" stroke-width="2" opacity="0.55" stroke-linecap="round"/>
-            <!-- Side hair tufts -->
-            <path d="M 118 150 Q 110 175 115 210 Q 122 215 128 210 Q 122 175 130 150 Z" fill="url(#skHair)"/>
-            <path d="M 242 150 Q 250 175 245 210 Q 238 215 232 210 Q 238 175 230 150 Z" fill="url(#skHair)"/>
+            <!-- ===== HAIR FRONT (full straight bangs, jagged edge) ===== -->
+            <!-- Main bangs cap covers forehead, jagged bottom -->
+            <path d="M 130 105 Q 142 92 165 90 Q 180 88 195 90 Q 218 92 230 105
+                     L 232 145
+                     L 222 138 L 218 148 L 210 142 L 202 152 L 195 145 L 188 152 L 180 144 L 172 152 L 165 145 L 158 152 L 150 142 L 142 148 L 138 138 L 128 145 Z"
+                  fill="url(#skHair)"/>
+            <!-- Bang darker undertone -->
+            <path d="M 132 110 Q 145 100 165 96 Q 180 94 195 96 Q 215 100 228 110 L 228 138 Q 180 130 132 138 Z"
+                  fill="url(#skHairShade)" opacity="0.55"/>
+            <!-- Bang highlight strands -->
+            <path d="M 145 110 L 152 132" stroke="#fff" stroke-width="1.2" opacity="0.45" stroke-linecap="round"/>
+            <path d="M 175 105 L 178 130" stroke="#fff" stroke-width="1.2" opacity="0.40" stroke-linecap="round"/>
+            <path d="M 205 108 L 200 132" stroke="#fff" stroke-width="1.2" opacity="0.45" stroke-linecap="round"/>
+            <path d="M 220 112 L 216 136" stroke="#fff" stroke-width="1" opacity="0.30" stroke-linecap="round"/>
 
-            <!-- ===== TWIN PONYTAILS (laterali, animati con sway) ===== -->
-            <g class="sk-pigtail-l">
-              <path d="M 95 145 Q 60 175 50 230 Q 55 250 75 245 Q 90 200 105 165 Z" fill="url(#skHair)"/>
-              <path d="M 65 175 Q 58 215 70 240" fill="none" stroke="#fff" stroke-width="1.8" opacity="0.45" stroke-linecap="round"/>
-              <!-- Black hairband ribbon -->
-              <path d="M 96 148 Q 88 144 86 152 Q 88 158 98 156 Z" fill="#1a1a1a"/>
-              <ellipse cx="92" cy="150" rx="3" ry="2.5" fill="#1a1a1a"/>
+            <!-- ===== SIDE FRAMING STRANDS (long, past chin, signature Makima) ===== -->
+            <!-- Left framing strand -->
+            <path d="M 130 138 Q 122 175 124 220 Q 128 240 134 248 Q 138 240 136 218 Q 134 175 142 142 Z" fill="url(#skHair)"/>
+            <path d="M 132 160 Q 128 200 132 240" fill="none" stroke="#3a1408" stroke-width="0.7" opacity="0.45"/>
+            <!-- Right framing strand -->
+            <path d="M 230 138 Q 238 175 236 220 Q 232 240 226 248 Q 222 240 224 218 Q 226 175 218 142 Z" fill="url(#skHair)"/>
+            <path d="M 228 160 Q 232 200 228 240" fill="none" stroke="#3a1408" stroke-width="0.7" opacity="0.45"/>
+
+            <!-- Small braid tip visible coming over front-right shoulder (front-view detail) -->
+            <g class="mk-braid-tip">
+              <ellipse cx="220" cy="252" rx="5" ry="3.5" fill="url(#skHair)" stroke="#3a1408" stroke-width="0.5" opacity="0.95"/>
+              <ellipse cx="220" cy="262" rx="5" ry="3.5" fill="url(#skHair)" stroke="#3a1408" stroke-width="0.5" opacity="0.95"/>
+              <path d="M 217 270 Q 220 278 223 270" fill="url(#skHair)"/>
             </g>
-            <g class="sk-pigtail-r">
-              <path d="M 265 145 Q 300 175 310 230 Q 305 250 285 245 Q 270 200 255 165 Z" fill="url(#skHair)"/>
-              <path d="M 295 175 Q 302 215 290 240" fill="none" stroke="#fff" stroke-width="1.8" opacity="0.45" stroke-linecap="round"/>
-              <path d="M 264 148 Q 272 144 274 152 Q 272 158 262 156 Z" fill="#1a1a1a"/>
-              <ellipse cx="268" cy="150" rx="3" ry="2.5" fill="#1a1a1a"/>
-            </g>
 
-            <!-- ===== EYES (anime large) ===== -->
+            <!-- ===== EYES (Makima signature: gold iris + concentric rings) ===== -->
             <g class="av-eyes">
               <!-- Left eye -->
-              <ellipse class="sk-eye-shape" cx="155" cy="165" rx="13" ry="16" fill="#fff"/>
-              <ellipse cx="155" cy="170" rx="11" ry="14" fill="url(#skIris)"/>
-              <ellipse cx="155" cy="172" rx="6" ry="9" fill="#831843"/>
-              <ellipse cx="155" cy="174" rx="3.5" ry="5" fill="#0a0a0a"/>
-              <!-- Sparkles -->
-              <circle cx="159" cy="160" r="3.5" fill="#fff"/>
-              <circle cx="151" cy="178" r="2" fill="#fff" opacity="0.85"/>
-              <ellipse cx="151" cy="167" rx="1.5" ry="2.5" fill="#fff" opacity="0.6"/>
+              <ellipse class="sk-eye-shape" cx="160" cy="170" rx="11" ry="10" fill="#fff"/>
+              <ellipse cx="160" cy="170" rx="9.5" ry="9" fill="url(#skIris)"/>
+              <!-- Concentric rings -->
+              <circle cx="160" cy="170" r="7" fill="none" stroke="#b45309" stroke-width="0.8" opacity="0.7"/>
+              <circle cx="160" cy="170" r="5" fill="none" stroke="#7c2d12" stroke-width="0.6" opacity="0.7"/>
+              <circle cx="160" cy="170" r="3" fill="none" stroke="#7c2d12" stroke-width="0.5" opacity="0.7"/>
+              <!-- Pupil -->
+              <ellipse class="av-iris" cx="160" cy="170" rx="1.6" ry="2" fill="#0a0a0a"/>
+              <!-- Tiny catchlight -->
+              <circle cx="162" cy="167" r="1" fill="#fff" opacity="0.85"/>
               <!-- Right eye -->
-              <ellipse class="sk-eye-shape" cx="205" cy="165" rx="13" ry="16" fill="#fff"/>
-              <ellipse cx="205" cy="170" rx="11" ry="14" fill="url(#skIris)"/>
-              <ellipse cx="205" cy="172" rx="6" ry="9" fill="#831843"/>
-              <ellipse cx="205" cy="174" rx="3.5" ry="5" fill="#0a0a0a"/>
-              <circle cx="209" cy="160" r="3.5" fill="#fff"/>
-              <circle cx="201" cy="178" r="2" fill="#fff" opacity="0.85"/>
-              <ellipse cx="201" cy="167" rx="1.5" ry="2.5" fill="#fff" opacity="0.6"/>
+              <ellipse class="sk-eye-shape" cx="200" cy="170" rx="11" ry="10" fill="#fff"/>
+              <ellipse cx="200" cy="170" rx="9.5" ry="9" fill="url(#skIris)"/>
+              <circle cx="200" cy="170" r="7" fill="none" stroke="#b45309" stroke-width="0.8" opacity="0.7"/>
+              <circle cx="200" cy="170" r="5" fill="none" stroke="#7c2d12" stroke-width="0.6" opacity="0.7"/>
+              <circle cx="200" cy="170" r="3" fill="none" stroke="#7c2d12" stroke-width="0.5" opacity="0.7"/>
+              <ellipse class="av-iris" cx="200" cy="170" rx="1.6" ry="2" fill="#0a0a0a"/>
+              <circle cx="202" cy="167" r="1" fill="#fff" opacity="0.85"/>
             </g>
 
-            <!-- Eyelashes -->
-            <path d="M 142 152 Q 155 148 168 152" fill="none" stroke="#3a1a2a" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M 192 152 Q 205 148 218 152" fill="none" stroke="#3a1a2a" stroke-width="2.2" stroke-linecap="round"/>
+            <!-- Upper eyelash line (subtle, sharp) -->
+            <path d="M 150 162 Q 160 159 170 163" fill="none" stroke="#2a1208" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M 190 163 Q 200 159 210 162" fill="none" stroke="#2a1208" stroke-width="1.6" stroke-linecap="round"/>
+            <!-- Lower eyelid hint -->
+            <path d="M 152 175 Q 160 178 168 175" fill="none" stroke="#3a1408" stroke-width="0.5" opacity="0.35"/>
+            <path d="M 192 175 Q 200 178 208 175" fill="none" stroke="#3a1408" stroke-width="0.5" opacity="0.35"/>
 
-            <!-- Closed/blinking eyes (when triggered) -->
+            <!-- Closed/blinking eyes -->
             <g class="av-eyelids" opacity="0">
-              <path d="M 142 168 Q 155 172 168 168" fill="none" stroke="#3a1a2a" stroke-width="2.5" stroke-linecap="round"/>
-              <path d="M 192 168 Q 205 172 218 168" fill="none" stroke="#3a1a2a" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M 150 170 Q 160 173 170 170" fill="none" stroke="#2a1208" stroke-width="2" stroke-linecap="round"/>
+              <path d="M 190 170 Q 200 173 210 170" fill="none" stroke="#2a1208" stroke-width="2" stroke-linecap="round"/>
             </g>
 
-            <!-- Eyebrows -->
+            <!-- Eyebrows: thin, slightly arched, calm-severe -->
             <g class="av-brows">
-              <path class="av-brow-l" d="M 144 142 Q 156 137 168 142" fill="none" stroke="#a64a78" stroke-width="2.2" stroke-linecap="round"/>
-              <path class="av-brow-r" d="M 192 142 Q 204 137 216 142" fill="none" stroke="#a64a78" stroke-width="2.2" stroke-linecap="round"/>
+              <path class="av-brow-l" d="M 150 150 Q 160 146 170 150" fill="none" stroke="#5a2210" stroke-width="1.8" stroke-linecap="round"/>
+              <path class="av-brow-r" d="M 190 150 Q 200 146 210 150" fill="none" stroke="#5a2210" stroke-width="1.8" stroke-linecap="round"/>
             </g>
 
-            <!-- Blush -->
-            <ellipse cx="148" cy="190" rx="11" ry="5" fill="url(#skBlush)"/>
-            <ellipse cx="212" cy="190" rx="11" ry="5" fill="url(#skBlush)"/>
+            <!-- Subtle cheek tint (no anime blush) -->
+            <ellipse cx="155" cy="190" rx="8" ry="3" fill="url(#skBlush)"/>
+            <ellipse cx="205" cy="190" rx="8" ry="3" fill="url(#skBlush)"/>
 
             <!-- Nose hint -->
-            <path d="M 178 184 L 180 190 L 182 184" fill="none" stroke="#d4a890" stroke-width="0.8" stroke-linecap="round" opacity="0.7"/>
+            <path d="M 178 184 L 180 192 L 182 184" fill="none" stroke="#c79a78" stroke-width="0.6" stroke-linecap="round" opacity="0.55"/>
 
-            <!-- ===== MOUTH VARIANTS ===== -->
-            <path class="av-mouth av-mouth-idle" d="M 173 200 Q 180 203 187 200" fill="none" stroke="#c14c70" stroke-width="1.6" stroke-linecap="round"/>
-            <!-- Big smile (success/hello) -->
-            <path class="av-mouth av-mouth-smile" d="M 168 198 Q 180 212 192 198" fill="#9c2858" stroke="#7a1d44" stroke-width="0.8" opacity="0"/>
-            <path class="av-mouth av-mouth-smile-tongue" d="M 174 204 Q 180 209 186 204 Q 184 207 180 207 Q 176 207 174 204 Z" fill="#ff7a9b" opacity="0"/>
-            <!-- Talking (open mouth) -->
-            <ellipse class="av-mouth av-mouth-talk" cx="180" cy="202" rx="5" ry="4" fill="#5e1830" opacity="0"/>
-            <!-- Sad mouth -->
-            <path class="av-mouth av-mouth-sad" d="M 168 208 Q 180 198 192 208" fill="none" stroke="#c14c70" stroke-width="2" stroke-linecap="round" opacity="0"/>
-            <!-- Focused tight -->
-            <path class="av-mouth av-mouth-focus" d="M 174 202 L 186 202" fill="none" stroke="#c14c70" stroke-width="2" stroke-linecap="round" opacity="0"/>
-            <!-- Angry zigzag -->
-            <path class="av-mouth av-mouth-angry" d="M 170 204 L 174 200 L 178 204 L 182 200 L 186 204 L 190 200" fill="none" stroke="#c14c70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0"/>
+            <!-- ===== MOUTH VARIANTS (Makima: small / restrained) ===== -->
+            <!-- Idle: faint closed-lip line -->
+            <path class="av-mouth av-mouth-idle" d="M 175 202 Q 180 204 185 202" fill="none" stroke="#8a3a28" stroke-width="1.2" stroke-linecap="round"/>
+            <!-- Slight smile (success/hello) — subtle, not toothy -->
+            <path class="av-mouth av-mouth-smile" d="M 173 201 Q 180 207 187 201" fill="none" stroke="#8a3a28" stroke-width="1.4" stroke-linecap="round" opacity="0"/>
+            <!-- Tongue path kept as no-op (legacy hook) -->
+            <path class="av-mouth av-mouth-smile-tongue" d="M 0 0" fill="none" opacity="0"/>
+            <!-- Talking (small open mouth) -->
+            <ellipse class="av-mouth av-mouth-talk" cx="180" cy="203" rx="3" ry="2" fill="#3a1408" opacity="0"/>
+            <!-- Sad / disappointed (small downturn) -->
+            <path class="av-mouth av-mouth-sad" d="M 175 205 Q 180 201 185 205" fill="none" stroke="#8a3a28" stroke-width="1.4" stroke-linecap="round" opacity="0"/>
+            <!-- Focus (tight straight line) -->
+            <path class="av-mouth av-mouth-focus" d="M 174 203 L 186 203" fill="none" stroke="#8a3a28" stroke-width="1.4" stroke-linecap="round" opacity="0"/>
+            <!-- Angry / annoyed (slight asymmetric) -->
+            <path class="av-mouth av-mouth-angry" d="M 173 204 L 178 201 L 183 204 L 187 202" fill="none" stroke="#8a3a28" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0"/>
 
-            <!-- ===== TEARS (error state) ===== -->
-            <g class="av-tears" opacity="0">
-              <path d="M 155 184 Q 152 200 156 215 Q 160 200 158 184" fill="#7dd3fc" opacity="0.92"/>
-              <path d="M 205 184 Q 202 200 206 215 Q 210 200 208 184" fill="#7dd3fc" opacity="0.92"/>
-              <circle cx="156" cy="218" r="3" fill="#7dd3fc" opacity="0.85"/>
-              <circle cx="206" cy="218" r="3" fill="#7dd3fc" opacity="0.85"/>
-            </g>
+            <!-- Tears legacy hook (kept invisible — Makima doesn't cry) -->
+            <g class="av-tears" opacity="0"></g>
 
-            <!-- Anger marks (when angry state) -->
-            <g class="sk-anger" opacity="0">
-              <path d="M 110 110 L 118 110 L 114 100 M 110 100 L 118 110" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/>
-            </g>
+            <!-- Anger legacy hook (kept invisible — composed glare instead) -->
+            <g class="sk-anger" opacity="0"></g>
 
-            <!-- ===== ARMS - IDLE pose (relaxed at sides) ===== -->
+            <!-- ===== ARMS - IDLE pose (long-sleeved, hanging at sides) ===== -->
             <g class="av-arms av-arms-idle">
-              <!-- Left arm -->
-              <path d="M 130 240 Q 110 280 105 340" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
-              <!-- Right arm -->
-              <path d="M 230 240 Q 250 280 255 340" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
-              <!-- Hands -->
-              <ellipse cx="105" cy="345" rx="9" ry="11" fill="url(#skSkin)"/>
-              <ellipse cx="255" cy="345" rx="9" ry="11" fill="url(#skSkin)"/>
-              <!-- Short sleeves -->
-              <path d="M 122 232 Q 110 250 110 268 L 134 268 Q 138 250 134 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
-              <path d="M 238 232 Q 250 250 250 268 L 226 268 Q 222 250 226 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+              <!-- Left sleeve -->
+              <path d="M 132 232 Q 116 270 110 348" fill="none" stroke="#f8f6f0" stroke-width="14" stroke-linecap="round"/>
+              <!-- Cuff -->
+              <ellipse cx="110" cy="350" rx="9" ry="3" fill="#dcd8cf" stroke="#a8a49a" stroke-width="0.5"/>
+              <!-- Hand -->
+              <ellipse cx="110" cy="358" rx="7" ry="9" fill="url(#skSkin)"/>
+              <!-- Right sleeve -->
+              <path d="M 228 232 Q 244 270 250 348" fill="none" stroke="#f8f6f0" stroke-width="14" stroke-linecap="round"/>
+              <ellipse cx="250" cy="350" rx="9" ry="3" fill="#dcd8cf" stroke="#a8a49a" stroke-width="0.5"/>
+              <ellipse cx="250" cy="358" rx="7" ry="9" fill="url(#skSkin)"/>
+              <!-- Shoulder caps -->
+              <path d="M 124 232 Q 116 244 116 256 L 138 256 Q 138 244 134 232 Z" fill="url(#skBlouse)" stroke="#c8c4ba" stroke-width="0.4"/>
+              <path d="M 226 232 Q 244 244 244 256 L 222 256 Q 222 244 226 232 Z" fill="url(#skBlouse)" stroke="#c8c4ba" stroke-width="0.4"/>
             </g>
 
-            <!-- ===== ARMS - SEARCH pose (hands on laptop) ===== -->
+            <!-- ===== ARMS - SEARCH pose (forward, hands on laptop) ===== -->
             <g class="av-arms av-arms-search" opacity="0">
-              <path d="M 130 240 Q 130 290 155 310" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
-              <path d="M 230 240 Q 230 290 205 310" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
-              <ellipse cx="155" cy="310" rx="9" ry="8" fill="url(#skSkin)"/>
-              <ellipse cx="205" cy="310" rx="9" ry="8" fill="url(#skSkin)"/>
-              <path d="M 122 232 Q 110 250 115 268 L 138 268 Q 142 250 134 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
-              <path d="M 238 232 Q 250 250 245 268 L 222 268 Q 218 250 226 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+              <path d="M 132 232 Q 130 280 158 308" fill="none" stroke="#f8f6f0" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 228 232 Q 230 280 202 308" fill="none" stroke="#f8f6f0" stroke-width="14" stroke-linecap="round"/>
+              <ellipse cx="158" cy="312" rx="8" ry="3" fill="#dcd8cf" stroke="#a8a49a" stroke-width="0.4"/>
+              <ellipse cx="202" cy="312" rx="8" ry="3" fill="#dcd8cf" stroke="#a8a49a" stroke-width="0.4"/>
+              <ellipse cx="158" cy="316" rx="7" ry="6" fill="url(#skSkin)"/>
+              <ellipse cx="202" cy="316" rx="7" ry="6" fill="url(#skSkin)"/>
+              <path d="M 124 232 Q 116 244 118 256 L 140 256 Q 138 244 134 232 Z" fill="url(#skBlouse)" stroke="#c8c4ba" stroke-width="0.4"/>
+              <path d="M 226 232 Q 244 244 242 256 L 220 256 Q 222 244 226 232 Z" fill="url(#skBlouse)" stroke="#c8c4ba" stroke-width="0.4"/>
             </g>
 
-            <!-- ===== ARMS - POINT pose (left arm pointing left, right at side) ===== -->
+            <!-- ===== ARMS - POINT pose (left hand gestures left, right at side) ===== -->
             <g class="av-arms av-arms-point" opacity="0">
-              <!-- Left arm extended pointing -->
-              <path d="M 130 240 Q 100 235 60 245" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
-              <ellipse cx="60" cy="245" rx="9" ry="8" fill="url(#skSkin)"/>
-              <!-- Pointing finger -->
-              <path d="M 60 245 L 38 240" stroke="url(#skSkin)" stroke-width="6" stroke-linecap="round"/>
-              <!-- Right arm at hip -->
-              <path d="M 230 240 Q 248 270 230 295" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
-              <ellipse cx="230" cy="298" rx="9" ry="8" fill="url(#skSkin)"/>
-              <path d="M 122 232 Q 100 240 95 252 L 118 252 Q 130 244 134 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
-              <path d="M 238 232 Q 252 250 240 268 L 220 268 Q 218 250 226 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+              <!-- Left arm extended (small gesture, not full point — Makima is composed) -->
+              <path d="M 132 232 Q 110 240 80 252" fill="none" stroke="#f8f6f0" stroke-width="14" stroke-linecap="round"/>
+              <ellipse cx="80" cy="254" rx="8" ry="3" fill="#dcd8cf" stroke="#a8a49a" stroke-width="0.4"/>
+              <ellipse cx="76" cy="258" rx="8" ry="6" fill="url(#skSkin)"/>
+              <!-- Right arm at side -->
+              <path d="M 228 232 Q 244 270 250 348" fill="none" stroke="#f8f6f0" stroke-width="14" stroke-linecap="round"/>
+              <ellipse cx="250" cy="350" rx="9" ry="3" fill="#dcd8cf" stroke="#a8a49a" stroke-width="0.5"/>
+              <ellipse cx="250" cy="358" rx="7" ry="9" fill="url(#skSkin)"/>
+              <path d="M 124 232 Q 110 240 110 250 L 130 250 Q 134 240 134 232 Z" fill="url(#skBlouse)" stroke="#c8c4ba" stroke-width="0.4"/>
+              <path d="M 226 232 Q 244 244 244 256 L 222 256 Q 222 244 226 232 Z" fill="url(#skBlouse)" stroke="#c8c4ba" stroke-width="0.4"/>
             </g>
 
-            <!-- ===== ARMS - WAVE pose (right arm waving up) ===== -->
+            <!-- ===== ARMS - WAVE pose (small polite acknowledgement) ===== -->
             <g class="av-arms av-arms-wave" opacity="0">
               <!-- Left arm at side -->
-              <path d="M 130 240 Q 110 280 105 340" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
-              <ellipse cx="105" cy="345" rx="9" ry="11" fill="url(#skSkin)"/>
-              <!-- Right arm waving -->
+              <path d="M 132 232 Q 116 270 110 348" fill="none" stroke="#f8f6f0" stroke-width="14" stroke-linecap="round"/>
+              <ellipse cx="110" cy="350" rx="9" ry="3" fill="#dcd8cf" stroke="#a8a49a" stroke-width="0.5"/>
+              <ellipse cx="110" cy="358" rx="7" ry="9" fill="url(#skSkin)"/>
+              <!-- Right hand subtle small lift (not bouncing wave) -->
               <g class="sk-wave-arm">
-                <path d="M 230 240 Q 260 200 275 150" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
-                <ellipse cx="275" cy="148" rx="11" ry="10" fill="url(#skSkin)"/>
-                <!-- Fingers spread -->
-                <line x1="275" y1="148" x2="270" y2="135" stroke="url(#skSkin)" stroke-width="4" stroke-linecap="round"/>
-                <line x1="275" y1="148" x2="278" y2="132" stroke="url(#skSkin)" stroke-width="4" stroke-linecap="round"/>
-                <line x1="275" y1="148" x2="285" y2="138" stroke="url(#skSkin)" stroke-width="4" stroke-linecap="round"/>
+                <path d="M 228 232 Q 252 240 268 232" fill="none" stroke="#f8f6f0" stroke-width="14" stroke-linecap="round"/>
+                <ellipse cx="268" cy="232" rx="7" ry="6" fill="url(#skSkin)"/>
               </g>
-              <path d="M 122 232 Q 110 250 110 268 L 134 268 Q 138 250 134 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
-              <path d="M 238 232 Q 252 220 258 200 L 240 195 Q 232 215 226 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+              <path d="M 124 232 Q 116 244 116 256 L 138 256 Q 138 244 134 232 Z" fill="url(#skBlouse)" stroke="#c8c4ba" stroke-width="0.4"/>
+              <path d="M 226 232 Q 248 232 252 240 L 232 250 Q 222 244 226 232 Z" fill="url(#skBlouse)" stroke="#c8c4ba" stroke-width="0.4"/>
             </g>
 
-            <!-- ===== ARMS - SAD pose (one hand to face) ===== -->
+            <!-- ===== ARMS - SAD pose (Makima doesn't cover face — small downward composed posture) ===== -->
             <g class="av-arms av-arms-sad" opacity="0">
-              <!-- Left arm covering face -->
-              <path d="M 130 240 Q 130 200 150 180" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
-              <ellipse cx="152" cy="178" rx="11" ry="9" fill="url(#skSkin)"/>
-              <!-- Right arm at side -->
-              <path d="M 230 240 Q 250 280 255 340" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
-              <ellipse cx="255" cy="345" rx="9" ry="11" fill="url(#skSkin)"/>
-              <path d="M 122 232 Q 115 215 130 200 L 145 210 Q 138 224 134 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
-              <path d="M 238 232 Q 250 250 250 268 L 226 268 Q 222 250 226 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+              <path d="M 132 232 Q 122 268 124 348" fill="none" stroke="#f8f6f0" stroke-width="14" stroke-linecap="round"/>
+              <ellipse cx="124" cy="350" rx="9" ry="3" fill="#dcd8cf" stroke="#a8a49a" stroke-width="0.5"/>
+              <ellipse cx="124" cy="358" rx="7" ry="9" fill="url(#skSkin)"/>
+              <path d="M 228 232 Q 238 268 236 348" fill="none" stroke="#f8f6f0" stroke-width="14" stroke-linecap="round"/>
+              <ellipse cx="236" cy="350" rx="9" ry="3" fill="#dcd8cf" stroke="#a8a49a" stroke-width="0.5"/>
+              <ellipse cx="236" cy="358" rx="7" ry="9" fill="url(#skSkin)"/>
+              <path d="M 124 232 Q 116 244 118 256 L 138 256 Q 138 244 134 232 Z" fill="url(#skBlouse)" stroke="#c8c4ba" stroke-width="0.4"/>
+              <path d="M 226 232 Q 244 244 242 256 L 222 256 Q 222 244 226 232 Z" fill="url(#skBlouse)" stroke="#c8c4ba" stroke-width="0.4"/>
             </g>
 
             <!-- ===== LAPTOP (only in search state) ===== -->
@@ -1984,10 +2040,10 @@ input, select, textarea { font-family: inherit; }
               <rect x="135" y="280" width="90" height="42" rx="3" fill="url(#skLaptop)"/>
               <rect x="139" y="284" width="82" height="34" rx="2" fill="url(#skScreen)" opacity="0.3"/>
               <line class="av-code" x1="143" y1="290" x2="173" y2="290" stroke="#5eead4" stroke-width="1.4" opacity="0.95"/>
-              <line class="av-code" x1="143" y1="296" x2="195" y2="296" stroke="#fbcfe8" stroke-width="1" opacity="0.7"/>
+              <line class="av-code" x1="143" y1="296" x2="195" y2="296" stroke="#fde68a" stroke-width="1" opacity="0.7"/>
               <line class="av-code" x1="143" y1="302" x2="165" y2="302" stroke="#aab5c2" stroke-width="1" opacity="0.6"/>
               <line class="av-code" x1="143" y1="308" x2="180" y2="308" stroke="#5eead4" stroke-width="1" opacity="0.8"/>
-              <line class="av-code" x1="143" y1="314" x2="170" y2="314" stroke="#34d399" stroke-width="1" opacity="0.85"/>
+              <line class="av-code" x1="143" y1="314" x2="170" y2="314" stroke="#f59e0b" stroke-width="1" opacity="0.85"/>
               <rect class="av-caret" x="172" y="312" width="2" height="5" fill="#5eead4"/>
             </g>
 
@@ -2441,7 +2497,7 @@ app.listen(PORT, () => console.log('IntelHub proxy on ' + PORT));</pre>
 
         <!-- Avatar renderer selection -->
         <div class="card">
-          <h3 data-i18n="avatar.title">Sakura — Avatar Renderer</h3>
+          <h3 data-i18n="avatar.title">Makima — Avatar Renderer</h3>
           <p class="muted" style="margin-bottom: 12px;" data-i18n="avatar.desc">
             The avatar architecture supports multiple renderers, picked in priority order: Live2D → Sprite → Static → SVG (current floor). Drop production assets to upgrade fidelity without code changes.
           </p>
@@ -2835,7 +2891,7 @@ const I18N = {
     'ai.skipped.title': 'No analysis needed',
     'ai.skipped.body': "The search returned <strong>0 hits</strong> across all configured connectors — no breach data to analyze. Claude API call skipped to save tokens.",
     'ai.skipped.action': 'Force run analysis anyway',
-    'avatar.title': 'Sakura — Avatar Renderer',
+    'avatar.title': 'Makima — Avatar Renderer',
     'avatar.desc': 'The avatar architecture supports multiple renderers, picked in priority order: Live2D → Sprite → Static → SVG (current floor). Drop production assets to upgrade fidelity without code changes.',
     'avatar.manifest': 'Asset checklist for higher fidelity',
     'avatar.active': 'Active',
@@ -3085,7 +3141,7 @@ const I18N = {
     'ai.skipped.title': 'Analisi non necessaria',
     'ai.skipped.body': "La ricerca non ha prodotto risultati (<strong>0 hit</strong>) su nessun connettore configurato — niente dati di breach da analizzare. Chiamata a Claude saltata per non consumare token.",
     'ai.skipped.action': 'Esegui comunque l\'analisi',
-    'avatar.title': 'Sakura — Renderer Avatar',
+    'avatar.title': 'Makima — Renderer Avatar',
     'avatar.desc': "L'architettura avatar supporta più renderer, scelti in ordine di priorità: Live2D → Sprite → Static → SVG (floor attuale). Carica gli asset di produzione per upgradare la fidelity senza modifiche al codice.",
     'avatar.manifest': 'Checklist asset per fidelity più alta',
     'avatar.active': 'Attivo',
@@ -3630,7 +3686,7 @@ Generate the complete Phishing/Email Forensics report. Always include: risk verd
 }
 
 /* ============================================================
-   Avatar System (Sakura) — modular architecture
+   Avatar System (Makima) — modular architecture
    ============================================================
    Equivalente a:
      /avatar/core/{controller, state-machine, events, config}.js
@@ -3665,21 +3721,21 @@ const Avatar = (() => {
       description: 'Live2D Cubism 4 model — pipeline anime production-grade',
       sdkUrl: 'https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js',
       requiredAssets: {
-        modelJson: '<sakura>.model3.json',
-        moc: '<sakura>.moc3',
-        physics: '<sakura>.physics3.json',
-        textures: ['<sakura>/textures/texture_00.png', '... (1-4 atlas)'],
+        modelJson: '<makima>.model3.json',
+        moc: '<makima>.moc3',
+        physics: '<makima>.physics3.json',
+        textures: ['<makima>/textures/texture_00.png', '... (1-4 atlas)'],
         motions: {
-          idle: '<sakura>_idle.motion3.json',
-          attentive: '<sakura>_attentive.motion3.json',
-          thinking: '<sakura>_thinking.motion3.json',
-          success: '<sakura>_success.motion3.json',
-          warning: '<sakura>_warning.motion3.json',
-          error: '<sakura>_error.motion3.json',
-          speaking: '<sakura>_speaking.motion3.json'
+          idle: '<makima>_idle.motion3.json',
+          attentive: '<makima>_attentive.motion3.json',
+          thinking: '<makima>_thinking.motion3.json',
+          success: '<makima>_success.motion3.json',
+          warning: '<makima>_warning.motion3.json',
+          error: '<makima>_error.motion3.json',
+          speaking: '<makima>_speaking.motion3.json'
         },
-        expressions: ['neutral', 'smile', 'surprised', 'sad', 'angry', 'shy'],
-        parameters: ['ParamAngleX', 'ParamAngleY', 'ParamEyeBallX', 'ParamMouthOpenY', 'ParamHairFront', 'ParamBreath']
+        expressions: ['neutral', 'slight-smile', 'observant', 'displeased', 'composed-glare'],
+        parameters: ['ParamAngleX', 'ParamAngleY', 'ParamEyeBallX', 'ParamMouthOpenY', 'ParamBangSway', 'ParamBraidSway', 'ParamBreath']
       },
       setupCost: '5-10 days for in-house Cubism Editor work, OR $300-800 commission',
       qualityGain: '+80% fidelity vs SVG'
@@ -3687,8 +3743,8 @@ const Avatar = (() => {
     sprite: {
       description: 'Layered sprite sheet — pre-rendered PNG poses',
       requiredAssets: {
-        spriteSheet: 'sakura-sprites.png (typically 4096×4096 atlas)',
-        manifest: 'sakura-sprites.json (frame coords + duration per state)',
+        spriteSheet: 'makima-sprites.png (typically 4096×4096 atlas)',
+        manifest: 'makima-sprites.json (frame coords + duration per state)',
         states: ['idle', 'attentive', 'thinking', 'searching', 'success', 'warning', 'error', 'speaking'],
         frames: 'min 4 frames per state for talk/blink loops'
       },
@@ -3699,13 +3755,13 @@ const Avatar = (() => {
       description: 'Single PNG per state — minimum viable upgrade',
       requiredAssets: {
         images: {
-          idle: 'sakura-idle.png (~512×768, transparent)',
-          attentive: 'sakura-attentive.png',
-          searching: 'sakura-searching.png',
-          success: 'sakura-success.png',
-          error: 'sakura-error.png',
-          speaking: 'sakura-speaking.png',
-          warning: 'sakura-warning.png'
+          idle: 'makima-idle.png (~512×768, transparent)',
+          attentive: 'makima-attentive.png',
+          searching: 'makima-searching.png',
+          success: 'makima-success.png',
+          error: 'makima-error.png',
+          speaking: 'makima-speaking.png',
+          warning: 'makima-warning.png'
         }
       },
       setupCost: '1-2 days illustration + cleanup',
@@ -3828,7 +3884,7 @@ const Avatar = (() => {
       this.stage = stage;
       this.imgEl = document.createElement('img');
       this.imgEl.className = 'avatar-static-img';
-      this.imgEl.alt = 'Sakura';
+      this.imgEl.alt = 'Makima';
       this.imgEl.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
       stage.querySelector('.avatar-frame').appendChild(this.imgEl);
       this.images = Config.staticAssets || {};
@@ -3932,7 +3988,7 @@ const Avatar = (() => {
 /* ----- AVATAR_LINES (i18n messages, retained from previous versions) ----- */
 const AVATAR_LINES = {
   en: {
-    hello: "Hi! I'm Sakura, your phishing analyst. Drop me an indicator and I'll run the recon!",
+    hello: "I'm Makima, your phishing analyst. Provide an indicator and I'll handle the recon.",
     idle: "Ready. Submit an email, domain, URL, IP or hash to investigate.",
     searching: "Querying sender reputation, DNS posture and threat feeds…",
     searchingLong: "Still working… URLScan submissions can take ~30s to detonate.",
@@ -3944,7 +4000,7 @@ const AVATAR_LINES = {
     angry: "Hmph! A provider blocked us. Check Worker logs."
   },
   it: {
-    hello: "Ciao! Sono Sakura, la tua phishing analyst. Dammi un indicatore e parto con la recon!",
+    hello: "Sono Makima, la tua phishing analyst. Fornisci un indicatore e procedo con la recon.",
     idle: "Pronta. Inserisci email, dominio, URL, IP o hash da investigare.",
     searching: "Interrogo reputation sender, posture DNS e threat feed…",
     searchingLong: "Ancora al lavoro… le submission URLScan richiedono ~30s per la detonation.",
