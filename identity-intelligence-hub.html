@@ -8,7 +8,7 @@
   default-src 'self';
   script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
   style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com;
-  font-src 'self' https://api.fontshare.com https://fonts.gstatic.com data:;
+  font-src 'self' https://api.fontshare.com https://cdn.fontshare.com https://fonts.gstatic.com data:;
   img-src 'self' data: blob:;
   connect-src 'self'
     https://api.anthropic.com
@@ -22,7 +22,6 @@
     https://*.onrender.com
     https://corsproxy.io
     https://api.allorigins.win;
-  frame-ancestors 'none';
   base-uri 'self';
   form-action 'none';
 " />
